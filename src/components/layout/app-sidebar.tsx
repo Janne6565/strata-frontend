@@ -22,7 +22,12 @@ const NAV_ITEMS: readonly NavItem[] = [
   { to: "/databases", labelKey: "nav.databases", icon: Database },
   { to: "/groups", labelKey: "nav.groups", icon: Layers },
   { to: "/admin/users", labelKey: "nav.users", icon: Users, adminOnly: true },
-  { labelKey: "nav.grants", icon: KeyRound, adminOnly: true },
+  {
+    to: "/admin/grants",
+    labelKey: "nav.grants",
+    icon: KeyRound,
+    adminOnly: true,
+  },
 ]
 
 export function AppSidebar() {
