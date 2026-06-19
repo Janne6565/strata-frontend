@@ -1,109 +1,82 @@
-import { Link } from "@tanstack/react-router"
+import { Link, useLocation } from "@tanstack/react-router"
 import type { ParseKeys } from "i18next"
 import { Database, KeyRound, Layers, LogOut, Users } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { BrandMark } from "@/components/brand-mark"
 import { useAuthInformation } from "@/hooks/useAuthInformation"
 import { cn } from "@/lib/utils"
 
 interface NavItem {
-  readonly to?: string
+  readonly to: string
   readonly labelKey: ParseKeys
   readonly icon: LucideIcon
   readonly adminOnly?: boolean
 }
 
-// `to` omitted → the screen isn't built yet; rendered disabled so the planned
-// information architecture is visible without dead links.
 const NAV_ITEMS: readonly NavItem[] = [
   { to: "/databases", labelKey: "nav.databases", icon: Database },
   { to: "/groups", labelKey: "nav.groups", icon: Layers },
   { to: "/admin/users", labelKey: "nav.users", icon: Users, adminOnly: true },
-  {
-    to: "/admin/grants",
-    labelKey: "nav.grants",
-    icon: KeyRound,
-    adminOnly: true,
-  },
+  { to: "/admin/grants", labelKey: "nav.grants", icon: KeyRound, adminOnly: true },
 ]
+
+const ITEM = "flex size-[38px] items-center justify-center rounded-[10px] transition-colors"
 
 export function AppSidebar() {
   const { t } = useTranslation()
-  const { username, role, isAdmin, logout } = useAuthInformation()
-
+  const { username, isAdmin, logout } = useAuthInformation()
+  const { pathname } = useLocation()
+  const initials = (username ?? "?").slice(0, 2).toUpperCase()
   const items = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin)
 
   return (
-    <aside className="bg-sidebar text-sidebar-foreground flex w-60 shrink-0 flex-col border-r border-sidebar-border">
-      <div className="flex h-14 items-center gap-2 px-4">
-        <div className="bg-primary size-6 rounded-md" aria-hidden />
-        <span className="text-sidebar-foreground font-semibold tracking-tight">
-          {t("common.appName")}
-        </span>
-      </div>
+    <aside className="flex w-[58px] shrink-0 flex-col items-center gap-1.5 border-r border-sidebar-border bg-sidebar py-3.5">
+      <BrandMark size={30} className="mb-2" />
 
-      <nav className="flex flex-1 flex-col gap-0.5 px-2 py-2">
-        {items.map((item) => {
-          const Icon = item.icon
-          const content = (
-            <>
-              <Icon className="size-4" />
-              <span className="flex-1">{t(item.labelKey)}</span>
-              {item.to === undefined && (
-                <Badge variant="outline" className="text-[10px]">
-                  {t("nav.soon")}
-                </Badge>
-              )}
-            </>
-          )
-          const base =
-            "flex items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium"
+      {items.map((item) => {
+        const Icon = item.icon
+        const active =
+          pathname === item.to || pathname.startsWith(`${item.to}/`)
+        return (
+          <Link
+            key={item.to}
+            to={item.to}
+            title={t(item.labelKey)}
+            aria-label={t(item.labelKey)}
+            className={cn(
+              ITEM,
+              active
+                ? "bg-primary/15 text-primary"
+                : "text-sidebar-foreground/55 hover:bg-white/5 hover:text-sidebar-foreground"
+            )}
+          >
+            <Icon className="size-[18px]" />
+          </Link>
+        )
+      })}
 
-          return item.to !== undefined ? (
-            <Link
-              key={item.labelKey}
-              to={item.to}
-              className={cn(
-                base,
-                "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              )}
-              activeProps={{
-                className: cn(
-                  base,
-                  "bg-sidebar-accent text-sidebar-accent-foreground"
-                ),
-              }}
-            >
-              {content}
-            </Link>
-          ) : (
-            <span
-              key={item.labelKey}
-              aria-disabled
-              className={cn(base, "text-sidebar-foreground/35")}
-            >
-              {content}
-            </span>
-          )
-        })}
-      </nav>
+      <div className="flex-1" />
 
-      <div className="flex flex-col gap-2 border-t border-sidebar-border p-3">
-        <div className="flex items-center justify-between gap-2 px-1">
-          <span className="truncate text-sm font-medium">{username}</span>
-          {role !== null && (
-            <Badge variant="secondary" className="shrink-0">
-              {role}
-            </Badge>
-          )}
-        </div>
-        <Button variant="ghost" size="sm" className="justify-start" onClick={logout}>
-          <LogOut className="size-4" />
-          {t("common.signOut")}
-        </Button>
+      <button
+        type="button"
+        title={t("common.signOut")}
+        aria-label={t("common.signOut")}
+        onClick={logout}
+        className={cn(
+          ITEM,
+          "text-sidebar-foreground/45 hover:bg-white/5 hover:text-sidebar-foreground"
+        )}
+      >
+        <LogOut className="size-[18px]" />
+      </button>
+
+      <div
+        title={username ?? ""}
+        className="mt-1 flex size-[30px] items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-[#3a3d46] to-[#23252b] text-[11px] font-semibold text-[#c3c6cd]"
+      >
+        {initials}
       </div>
     </aside>
   )

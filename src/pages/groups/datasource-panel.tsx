@@ -1,7 +1,7 @@
-import { Database } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import type { DatasourceResponse } from "@/api/generated/model"
+import { engineStyle, engineTint } from "@/lib/engine"
 
 export const DATASOURCE_DND_TYPE = "application/x-datasource-id"
 
@@ -46,10 +46,23 @@ export function DatasourcePanel({
                 )
                 event.dataTransfer.effectAllowed = "copy"
               }}
-              className="flex cursor-grab items-center gap-2 rounded-md border border-border bg-background px-2 py-1.5 text-sm active:cursor-grabbing"
+              className="flex cursor-grab items-center gap-2.5 rounded-[11px] border border-border bg-[#0f1014] px-2.5 py-2 active:cursor-grabbing hover:bg-white/[0.025]"
             >
-              <Database className="text-muted-foreground size-3.5 shrink-0" />
-              <span className="truncate">{label(datasource)}</span>
+              <span
+                className="flex size-7 shrink-0 items-center justify-center rounded-lg border font-mono text-[10px] font-semibold"
+                style={engineTint(datasource.driver)}
+              >
+                {engineStyle(datasource.driver).short}
+              </span>
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-medium">
+                  {label(datasource)}
+                </div>
+                <div className="text-muted-foreground truncate font-mono text-[10.5px]">
+                  {datasource.driver ?? "db"}
+                  {datasource.namespace ? ` · ${datasource.namespace}` : ""}
+                </div>
+              </div>
             </li>
           ))}
         </ul>

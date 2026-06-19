@@ -4,7 +4,6 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
-  Database,
   GripVertical,
   Pencil,
   Trash2,
@@ -17,6 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
+import { engineStyle, engineTint } from "@/lib/engine"
 import { cn } from "@/lib/utils"
 
 function dsLabel(datasource: DatasourceResponse): string {
@@ -191,7 +191,12 @@ export function GroupRow({
                   key={member.id}
                   className="flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 text-xs"
                 >
-                  <Database className="text-muted-foreground size-3" />
+                  <span
+                    className="flex size-4 shrink-0 items-center justify-center rounded border font-mono text-[8px] font-semibold"
+                    style={engineTint(member.driver)}
+                  >
+                    {engineStyle(member.driver).short}
+                  </span>
                   <span className="max-w-40 truncate">{dsLabel(member)}</span>
                   <button
                     type="button"

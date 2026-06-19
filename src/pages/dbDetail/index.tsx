@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router"
-import { ChevronLeft, Table2, TerminalSquare } from "lucide-react"
+import { ChevronLeft, Gauge, Table2, TerminalSquare } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { engineStyle, engineTint } from "@/lib/engine"
 import { BrowseTab } from "@/pages/dbDetail/browse-tab"
+import { OverviewTab } from "@/pages/dbDetail/overview-tab"
 import { QueryTab } from "@/pages/dbDetail/query-tab"
 import { useDatasourceDetailLogic } from "@/pages/dbDetail/useDatasourceDetailLogic"
 
@@ -15,12 +16,19 @@ export function DatasourceDetailPage({ id }: { readonly id: string }) {
     useDatasourceDetailLogic(id)
 
   const name = datasource?.displayName ?? datasource?.workloadName ?? id
-  const engine = [datasource?.driver, datasource?.engineVersion]
+  const engine = engineStyle(datasource?.driver)
+  const present = datasource?.status === "PRESENT"
+  const statusColor = present ? "#3ecf8e" : "#e5a53b"
+  const subline = [
+    [datasource?.driver, datasource?.engineVersion].filter(Boolean).join(" ") ||
+      t("detail.unknownEngine"),
+    datasource?.namespace,
+  ]
     .filter(Boolean)
     .join(" · ")
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-4 p-6">
+    <div className="animate-fade-up mx-auto flex max-w-5xl flex-col gap-4 p-7">
       <Link
         to="/databases"
         className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1 text-sm"
@@ -29,25 +37,45 @@ export function DatasourceDetailPage({ id }: { readonly id: string }) {
         {t("detail.back")}
       </Link>
 
-      <header className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-lg font-semibold">{name}</h1>
-          <p className="text-muted-foreground text-sm">
-            {engine || t("detail.unknownEngine")}
-            {datasource?.namespace ? ` — ${datasource.namespace}` : ""}
-          </p>
+      <header className="flex items-center gap-4">
+        <span
+          className="flex size-[46px] shrink-0 items-center justify-center rounded-xl border font-mono text-[15px] font-semibold"
+          style={engineTint(datasource?.driver)}
+        >
+          {engine.short}
+        </span>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2.5">
+            <h1 className="truncate text-[20px] font-semibold tracking-tight">
+              {name}
+            </h1>
+            {datasource?.status && (
+              <span
+                className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[12px]"
+                style={{ color: statusColor }}
+              >
+                <span
+                  className="size-[7px] rounded-full"
+                  style={{ background: statusColor }}
+                />
+                {present
+                  ? t("databases.healthy")
+                  : t("databases.status.missing")}
+              </span>
+            )}
+          </div>
+          <div className="text-muted-foreground mt-1 font-mono text-[12px]">
+            {subline}
+          </div>
         </div>
-        {datasource?.status && (
-          <Badge variant={datasource.status === "PRESENT" ? "success" : "warning"}>
-            {datasource.status === "PRESENT"
-              ? t("databases.status.present")
-              : t("databases.status.missing")}
-          </Badge>
-        )}
       </header>
 
-      <Tabs defaultValue="browse">
+      <Tabs defaultValue="overview">
         <TabsList>
+          <TabsTrigger value="overview">
+            <Gauge />
+            {t("detail.overview")}
+          </TabsTrigger>
           <TabsTrigger value="browse">
             <Table2 />
             {t("detail.browse")}
@@ -57,6 +85,10 @@ export function DatasourceDetailPage({ id }: { readonly id: string }) {
             {t("detail.query")}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview">
+          <OverviewTab datasource={datasource} />
+        </TabsContent>
 
         <TabsContent value="browse">
           {schemaStatus === "loading" && (
