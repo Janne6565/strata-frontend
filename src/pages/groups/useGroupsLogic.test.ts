@@ -4,10 +4,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import "@/i18n"
 import {
+  addMember,
   create1,
   list1,
+  removeMember,
   reorder,
 } from "@/api/generated/groups/groups"
+import { list2 } from "@/api/generated/inventory/inventory"
 import { useGroupsLogic } from "@/pages/groups/useGroupsLogic"
 
 vi.mock("@/api/generated/groups/groups", () => ({
@@ -16,11 +19,16 @@ vi.mock("@/api/generated/groups/groups", () => ({
   rename: vi.fn(),
   _delete: vi.fn(),
   reorder: vi.fn(),
+  addMember: vi.fn(),
+  removeMember: vi.fn(),
 }))
+vi.mock("@/api/generated/inventory/inventory", () => ({ list2: vi.fn() }))
 
 const mockedList = vi.mocked(list1)
 const mockedCreate = vi.mocked(create1)
 const mockedReorder = vi.mocked(reorder)
+const mockedAddMember = vi.mocked(addMember)
+const mockedRemoveMember = vi.mocked(removeMember)
 
 // Fresh array each call so useDataLoading's data reference changes on reload.
 const seed = () => [
@@ -32,6 +40,7 @@ describe("useGroupsLogic", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockedList.mockImplementation(async () => seed())
+    vi.mocked(list2).mockResolvedValue([])
   })
 
   it("lists groups ordered by position", async () => {
@@ -87,5 +96,22 @@ describe("useGroupsLogic", () => {
     await waitFor(() =>
       expect(result.current.groups.map((g) => g.id)).toEqual(["g1", "g2"])
     )
+  })
+
+  it("adds and removes a member then reloads", async () => {
+    mockedAddMember.mockResolvedValueOnce({ id: "g1", name: "A", position: 0 })
+    mockedRemoveMember.mockResolvedValueOnce({ id: "g1", name: "A", position: 0 })
+    const { result } = renderHook(() => useGroupsLogic())
+    await waitFor(() => expect(result.current.groups).toHaveLength(2))
+
+    await act(async () => {
+      await result.current.addMember("g1", "ds-1")
+    })
+    expect(mockedAddMember).toHaveBeenCalledWith("g1", { datasourceId: "ds-1" })
+
+    await act(async () => {
+      await result.current.removeMember("g1", "ds-1")
+    })
+    expect(mockedRemoveMember).toHaveBeenCalledWith("g1", "ds-1")
   })
 })

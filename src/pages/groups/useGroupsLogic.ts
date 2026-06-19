@@ -2,12 +2,15 @@ import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
+  addMember as addMemberApi,
   create1 as createGroup,
   _delete as deleteGroup,
   list1 as listGroups,
+  removeMember as removeMemberApi,
   rename as renameGroup,
   reorder as reorderGroups,
 } from "@/api/generated/groups/groups"
+import { list2 as listDatasources } from "@/api/generated/inventory/inventory"
 import type { GroupResponse } from "@/api/generated/model"
 import { useDataLoading } from "@/api/useDataLoading"
 import { extractProblemDetail } from "@/lib/errors"
@@ -26,6 +29,9 @@ export function useGroupsLogic() {
   const { t } = useTranslation()
   const loader = useCallback(() => listGroups(), [])
   const { data, status, reload } = useDataLoading(loader)
+  const { data: datasources } = useDataLoading(
+    useCallback(() => listDatasources(), [])
+  )
   const [override, setOverride] = useState<GroupResponse[] | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -69,6 +75,24 @@ export function useGroupsLogic() {
     [guard, t]
   )
 
+  const addMember = useCallback(
+    (groupId: string, datasourceId: string) =>
+      guard(
+        () => addMemberApi(groupId, { datasourceId }),
+        t("groups.error.member")
+      ),
+    [guard, t]
+  )
+
+  const removeMember = useCallback(
+    (groupId: string, datasourceId: string) =>
+      guard(
+        () => removeMemberApi(groupId, datasourceId),
+        t("groups.error.member")
+      ),
+    [guard, t]
+  )
+
   const reorder = useCallback(
     async (from: number, to: number) => {
       const next = moveItem(groups, from, to)
@@ -89,11 +113,14 @@ export function useGroupsLogic() {
 
   return {
     groups,
+    datasources: datasources ?? [],
     status,
     errorMessage,
     create,
     rename,
     remove,
     reorder,
+    addMember,
+    removeMember,
   }
 }
