@@ -22,15 +22,19 @@ export function useAuthInformation() {
     void navigate({ to: "/login" })
   }, [dispatch, navigate])
 
+  const role = auth.user?.role ?? null
+
   return useMemo(
     () => ({
       isLoggedIn: Boolean(auth.token),
       isBootstrapped: auth.bootstrapped,
       user: auth.user,
       username: auth.user?.username ?? null,
-      role: auth.user?.role ?? null,
+      role,
+      // OWNER and ADMIN share the admin-only surfaces (rescan, manual-add, admin nav).
+      isAdmin: role === "ADMIN" || role === "OWNER",
       logout,
     }),
-    [auth, logout]
+    [auth, role, logout]
   )
 }

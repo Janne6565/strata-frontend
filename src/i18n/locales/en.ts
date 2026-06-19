@@ -5,6 +5,8 @@ export const en = {
     appName: "Strata",
     signIn: "Sign in",
     signOut: "Sign out",
+    loading: "Loading…",
+    retry: "Retry",
   },
   login: {
     subtitle: "In-cluster database browser",
@@ -17,8 +19,40 @@ export const en = {
       generic: "Something went wrong. Please try again.",
     },
   },
-  home: {
-    signedInAs: "Signed in as {{username}}",
-    role: "Role",
+  nav: {
+    databases: "Databases",
+    groups: "Groups",
+    users: "Users",
+    grants: "Grants",
+    soon: "Soon",
+  },
+  search: {
+    placeholder: "Search databases…",
+  },
+  databases: {
+    title: "Databases",
+    subtitle: "{{count}} registered",
+    rescan: "Rescan",
+    rescanning: "Rescanning…",
+    error: "Couldn't load databases.",
+    status: {
+      present: "Present",
+      missing: "Missing",
+    },
+    origin: {
+      discovered: "Discovered",
+      manual: "Manual",
+    },
+    col: {
+      name: "Name",
+      engine: "Engine",
+      location: "Namespace",
+      status: "Status",
+      origin: "Origin",
+    },
+    empty: {
+      none: "No databases yet. Run a rescan to discover them.",
+      filtered: "No databases match your search.",
+    },
   },
 } as const
