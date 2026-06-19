@@ -12,7 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
-import { Route as AuthedDatabasesRouteImport } from './routes/_authed/databases'
+import { Route as AuthedDatabasesIndexRouteImport } from './routes/_authed/databases.index'
+import { Route as AuthedDatabasesIdRouteImport } from './routes/_authed/databases.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -28,35 +29,49 @@ const AuthedIndexRoute = AuthedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedRoute,
 } as any)
-const AuthedDatabasesRoute = AuthedDatabasesRouteImport.update({
-  id: '/databases',
-  path: '/databases',
+const AuthedDatabasesIndexRoute = AuthedDatabasesIndexRouteImport.update({
+  id: '/databases/',
+  path: '/databases/',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedDatabasesIdRoute = AuthedDatabasesIdRouteImport.update({
+  id: '/databases/$id',
+  path: '/databases/$id',
   getParentRoute: () => AuthedRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthedIndexRoute
   '/login': typeof LoginRoute
-  '/databases': typeof AuthedDatabasesRoute
+  '/databases/$id': typeof AuthedDatabasesIdRoute
+  '/databases/': typeof AuthedDatabasesIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/databases': typeof AuthedDatabasesRoute
   '/': typeof AuthedIndexRoute
+  '/databases/$id': typeof AuthedDatabasesIdRoute
+  '/databases': typeof AuthedDatabasesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authed': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
-  '/_authed/databases': typeof AuthedDatabasesRoute
   '/_authed/': typeof AuthedIndexRoute
+  '/_authed/databases/$id': typeof AuthedDatabasesIdRoute
+  '/_authed/databases/': typeof AuthedDatabasesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/databases'
+  fullPaths: '/' | '/login' | '/databases/$id' | '/databases/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/databases' | '/'
-  id: '__root__' | '/_authed' | '/login' | '/_authed/databases' | '/_authed/'
+  to: '/login' | '/' | '/databases/$id' | '/databases'
+  id:
+    | '__root__'
+    | '/_authed'
+    | '/login'
+    | '/_authed/'
+    | '/_authed/databases/$id'
+    | '/_authed/databases/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -87,24 +102,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
-    '/_authed/databases': {
-      id: '/_authed/databases'
+    '/_authed/databases/': {
+      id: '/_authed/databases/'
       path: '/databases'
-      fullPath: '/databases'
-      preLoaderRoute: typeof AuthedDatabasesRouteImport
+      fullPath: '/databases/'
+      preLoaderRoute: typeof AuthedDatabasesIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/databases/$id': {
+      id: '/_authed/databases/$id'
+      path: '/databases/$id'
+      fullPath: '/databases/$id'
+      preLoaderRoute: typeof AuthedDatabasesIdRouteImport
       parentRoute: typeof AuthedRoute
     }
   }
 }
 
 interface AuthedRouteChildren {
-  AuthedDatabasesRoute: typeof AuthedDatabasesRoute
   AuthedIndexRoute: typeof AuthedIndexRoute
+  AuthedDatabasesIdRoute: typeof AuthedDatabasesIdRoute
+  AuthedDatabasesIndexRoute: typeof AuthedDatabasesIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
-  AuthedDatabasesRoute: AuthedDatabasesRoute,
   AuthedIndexRoute: AuthedIndexRoute,
+  AuthedDatabasesIdRoute: AuthedDatabasesIdRoute,
+  AuthedDatabasesIndexRoute: AuthedDatabasesIndexRoute,
 }
 
 const AuthedRouteWithChildren =

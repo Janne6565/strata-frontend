@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router"
 import type { ParseKeys } from "i18next"
 import { useTranslation } from "react-i18next"
 
@@ -53,7 +54,17 @@ export function DatasourceTable({
               className="border-b border-border/60 last:border-0 hover:bg-muted/30"
             >
               <td className="px-4 py-2.5 font-medium">
-                {displayName(datasource)}
+                {datasource.id ? (
+                  <Link
+                    to="/databases/$id"
+                    params={{ id: datasource.id }}
+                    className="hover:text-primary hover:underline"
+                  >
+                    {displayName(datasource)}
+                  </Link>
+                ) : (
+                  displayName(datasource)
+                )}
               </td>
               <td className="text-muted-foreground px-4 py-2.5">
                 {datasource.driver ?? "—"}
