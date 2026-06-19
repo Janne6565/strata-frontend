@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router"
 import { Provider } from "react-redux"
 
 import "./index.css"
+import "@/i18n"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { store } from "@/store/store"
 import { routeTree } from "@/routeTree.gen"
