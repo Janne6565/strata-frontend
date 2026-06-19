@@ -20,7 +20,7 @@ interface NavItem {
 // information architecture is visible without dead links.
 const NAV_ITEMS: readonly NavItem[] = [
   { to: "/databases", labelKey: "nav.databases", icon: Database },
-  { labelKey: "nav.groups", icon: Layers },
+  { to: "/groups", labelKey: "nav.groups", icon: Layers },
   { to: "/admin/users", labelKey: "nav.users", icon: Users, adminOnly: true },
   { labelKey: "nav.grants", icon: KeyRound, adminOnly: true },
 ]

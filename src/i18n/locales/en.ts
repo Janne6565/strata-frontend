@@ -79,6 +79,22 @@ export const en = {
     writeHint: "Writes may be blocked by read-only or prod safe-mode.",
     rowsAffected: "{{count}} row(s) affected.",
   },
+  groups: {
+    title: "Groups",
+    subtitle: "Organize your databases into groups. Drag to reorder.",
+    add: "Add",
+    rename: "Rename",
+    namePlaceholder: "New group name",
+    memberCount: "{{count}} databases",
+    empty: "No groups yet. Create one above.",
+    error: {
+      load: "Couldn't load groups.",
+      create: "Couldn't create the group.",
+      rename: "Couldn't rename the group.",
+      delete: "Couldn't delete the group.",
+      reorder: "Couldn't save the new order.",
+    },
+  },
   users: {
     title: "Users",
     subtitle: "{{count}} accounts",
