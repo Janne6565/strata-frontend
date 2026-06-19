@@ -21,7 +21,7 @@ interface NavItem {
 const NAV_ITEMS: readonly NavItem[] = [
   { to: "/databases", labelKey: "nav.databases", icon: Database },
   { labelKey: "nav.groups", icon: Layers },
-  { labelKey: "nav.users", icon: Users, adminOnly: true },
+  { to: "/admin/users", labelKey: "nav.users", icon: Users, adminOnly: true },
   { labelKey: "nav.grants", icon: KeyRound, adminOnly: true },
 ]
 

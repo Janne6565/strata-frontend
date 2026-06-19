@@ -7,6 +7,9 @@ export const en = {
     signOut: "Sign out",
     loading: "Loading…",
     retry: "Retry",
+    confirm: "Confirm",
+    cancel: "Cancel",
+    delete: "Delete",
   },
   login: {
     subtitle: "In-cluster database browser",
@@ -75,5 +78,27 @@ export const en = {
     execute: "Execute (write)",
     writeHint: "Writes may be blocked by read-only or prod safe-mode.",
     rowsAffected: "{{count}} row(s) affected.",
+  },
+  users: {
+    title: "Users",
+    subtitle: "{{count}} accounts",
+    add: "Add user",
+    create: "Create",
+    you: "(you)",
+    enabled: "Enabled",
+    disabled: "Disabled",
+    passwordHint: "Password must be at least {{min}} characters.",
+    col: {
+      username: "Username",
+      role: "Role",
+      status: "Status",
+      actions: "Actions",
+    },
+    error: {
+      load: "Couldn't load users.",
+      create: "Couldn't create the user.",
+      changeRole: "Couldn't change the role.",
+      delete: "Couldn't delete the user.",
+    },
   },
 } as const

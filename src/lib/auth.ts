@@ -1,5 +1,7 @@
 import { redirect } from "@tanstack/react-router"
 
+import { store } from "@/store/store"
+
 export const AUTH_TOKEN_KEY = "strata.token"
 
 export function getAuthToken(): string | null {
@@ -26,5 +28,18 @@ export function isAuthenticated(): boolean {
 export function requireFullAuth(): void {
   if (!isAuthenticated()) {
     throw redirect({ to: "/login" })
+  }
+}
+
+/**
+ * Route guard for admin-only routes. Runs after the auth bootstrap, so the
+ * user's role is in the store; non-admins are bounced to the databases screen.
+ * The backend independently enforces authorization — this is just UX.
+ */
+export function requireAdmin(): void {
+  requireFullAuth()
+  const role = store.getState().auth.user?.role
+  if (role !== "ADMIN" && role !== "OWNER") {
+    throw redirect({ to: "/databases" })
   }
 }
