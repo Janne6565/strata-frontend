@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
+    "gen:api": "orval --config orval.config.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview"
@@ -19,6 +20,7 @@
     "@reduxjs/toolkit": "^2.12.0",
     "@tailwindcss/vite": "^4",
     "@tanstack/react-router": "^1.170.16",
+    "axios": "^1.18.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "i18next": "^26.3.1",
@@ -51,6 +53,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17",
     "jsdom": "^29.1.1",
+    "orval": "^8.18.0",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "typescript": "~6",
