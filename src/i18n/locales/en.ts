@@ -4,8 +4,21 @@ export const en = {
   common: {
     appName: "Strata",
     signIn: "Sign in",
+    signOut: "Sign out",
   },
   login: {
-    title: "Sign in to Strata",
+    subtitle: "In-cluster database browser",
+    title: "Sign in",
+    description: "Enter your credentials to continue.",
+    username: "Username",
+    password: "Password",
+    signingIn: "Signing in…",
+    error: {
+      generic: "Something went wrong. Please try again.",
+    },
+  },
+  home: {
+    signedInAs: "Signed in as {{username}}",
+    role: "Role",
   },
 } as const

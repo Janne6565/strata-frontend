@@ -6,6 +6,7 @@ import { Provider } from "react-redux"
 import "./index.css"
 import "@/i18n"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
+import { AuthProvider } from "@/providers/auth-provider"
 import { store } from "@/store/store"
 import { routeTree } from "@/routeTree.gen"
 
@@ -21,7 +22,9 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
       <ThemeProvider defaultTheme="dark">
-        <RouterProvider router={router} />
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
       </ThemeProvider>
     </Provider>
   </StrictMode>
