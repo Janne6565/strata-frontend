@@ -113,6 +113,10 @@ export const en = {
       "Organize databases into your own logical groups. Drag a card between groups — it's just a label, it doesn't move anything in the cluster.",
     newGroup: "New group",
     newGroupName: "New group",
+    createTitle: "New group",
+    createDescription:
+      "Name your new group. It's only a label — you can rename or delete it anytime.",
+    createSubmit: "Create group",
     unassigned: "Unassigned",
     dropHere: "Drag databases here",
     legend: "Legend",
