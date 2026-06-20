@@ -3,8 +3,8 @@ import { Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
-import { CreateGroupDialog } from "@/pages/groups/create-group-dialog"
-import { GroupBoard } from "@/pages/groups/group-board"
+import { CreateGroupDialog } from "@/pages/groups/CreateGroupDialog"
+import { GroupBoard } from "@/pages/groups/GroupBoard"
 import { useGroupsLogic } from "@/pages/groups/useGroupsLogic"
 
 export function GroupsPage() {

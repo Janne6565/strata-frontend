@@ -1,13 +1,10 @@
-import * as React from "react"
-import { useEffect, useMemo, useRef, useState } from "react"
-import { useNavigate } from "@tanstack/react-router"
 import { Dialog as DialogPrimitive, VisuallyHidden } from "radix-ui"
 import { CornerDownLeft, Search } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import type { DatasourceResponse } from "@/api/generated/model"
+import { useCommandPaletteLogic } from "@/components/useCommandPaletteLogic"
 import { engineStyle, engineTint } from "@/lib/engine"
-import { useDatasources } from "@/store/entityHooks"
 import { cn } from "@/lib/utils"
 
 function label(datasource: DatasourceResponse): string {
@@ -20,13 +17,12 @@ function label(datasource: DatasourceResponse): string {
   )
 }
 
-function KeyHint({
-  keys,
-  label,
-}: {
+interface KeyHintProps {
   readonly keys: string
   readonly label: string
-}) {
+}
+
+function KeyHint({ keys, label }: KeyHintProps) {
   return (
     <span className="flex items-center gap-1.5">
       <kbd className="rounded border border-white/10 bg-white/[0.04] px-1.5 py-px font-mono text-[10px] text-[#c4c7cd]">
@@ -42,78 +38,25 @@ function KeyHint({
  * top-bar search button or ⌘K / Ctrl+K, filters the cached catalog as you type,
  * and supports arrow-key navigation with Enter to open the highlighted result.
  */
-export function CommandPalette({
-  open,
-  onOpenChange,
-}: {
+interface CommandPaletteProps {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
-}) {
+}
+
+export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-  const { datasources } = useDatasources()
-  const [query, setQuery] = useState("")
-  const [active, setActive] = useState(0)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const listRef = useRef<HTMLDivElement>(null)
-
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (q === "") {
-      return datasources
-    }
-    return datasources.filter((datasource) =>
-      [
-        datasource.displayName,
-        datasource.driver,
-        datasource.namespace,
-        datasource.workloadName,
-        datasource.discoveryKey,
-      ].some((field) => field?.toLowerCase().includes(q))
-    )
-  }, [datasources, query])
-
-  // Global ⌘K / Ctrl+K toggles the palette from anywhere in the app.
-  useEffect(() => {
-    function onKey(event: KeyboardEvent) {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault()
-        onOpenChange(!open)
-      }
-    }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [open, onOpenChange])
-
-  // Keep the highlighted row scrolled into view as the selection moves.
-  useEffect(() => {
-    listRef.current
-      ?.querySelector<HTMLElement>(`[data-index="${active}"]`)
-      ?.scrollIntoView({ block: "nearest" })
-  }, [active])
-
-  function select(datasource: DatasourceResponse | undefined) {
-    if (!datasource) {
-      return
-    }
-    onOpenChange(false)
-    void navigate({ to: "/databases/$id", params: { id: datasource.id ?? "" } })
-  }
-
-  function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "ArrowDown") {
-      event.preventDefault()
-      setActive((i) => (results.length ? (i + 1) % results.length : 0))
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault()
-      setActive((i) =>
-        results.length ? (i - 1 + results.length) % results.length : 0
-      )
-    } else if (event.key === "Enter") {
-      event.preventDefault()
-      select(results[active])
-    }
-  }
+  const {
+    query,
+    active,
+    setActive,
+    results,
+    inputRef,
+    listRef,
+    select,
+    onInputKeyDown,
+    handleQueryChange,
+    handleOpenAutoFocus,
+  } = useCommandPaletteLogic(open, onOpenChange)
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -121,12 +64,7 @@ export function CommandPalette({
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          onOpenAutoFocus={(event) => {
-            event.preventDefault()
-            setQuery("")
-            setActive(0)
-            inputRef.current?.focus()
-          }}
+          onOpenAutoFocus={handleOpenAutoFocus}
           className="fixed top-[14vh] left-1/2 z-50 w-full max-w-[560px] -translate-x-1/2 px-4 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
         >
           <VisuallyHidden.Root>
@@ -139,10 +77,7 @@ export function CommandPalette({
               <input
                 ref={inputRef}
                 value={query}
-                onChange={(event) => {
-                  setQuery(event.target.value)
-                  setActive(0)
-                }}
+                onChange={(event) => handleQueryChange(event.target.value)}
                 onKeyDown={onInputKeyDown}
                 placeholder={t("search.placeholder")}
                 aria-label={t("search.open")}

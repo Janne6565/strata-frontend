@@ -3,8 +3,8 @@ import { Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
-import { CreateUserForm } from "@/pages/admin/users/create-user-form"
-import { UserTable } from "@/pages/admin/users/user-table"
+import { CreateUserForm } from "@/pages/admin/users/CreateUserForm"
+import { UserTable } from "@/pages/admin/users/UserTable"
 import { useUsersLogic } from "@/pages/admin/users/useUsersLogic"
 
 export function UsersPage() {

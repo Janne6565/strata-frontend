@@ -4,7 +4,7 @@ import { Database, KeyRound, Layers, LogOut, Users } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import { BrandMark } from "@/components/brand-mark"
+import { BrandMark } from "@/components/BrandMark"
 import {
   Tooltip,
   TooltipContent,

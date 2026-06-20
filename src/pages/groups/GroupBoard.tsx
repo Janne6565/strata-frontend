@@ -2,7 +2,7 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { DatasourceResponse, GroupResponse } from "@/api/generated/model"
-import { GroupZone, type Zone } from "@/pages/groups/group-zone"
+import { GroupZone, type Zone } from "@/pages/groups/GroupZone"
 
 export function GroupBoard({
   groups,

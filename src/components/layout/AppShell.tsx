@@ -1,7 +1,7 @@
 import { Outlet } from "@tanstack/react-router"
 
-import { AppSidebar } from "@/components/layout/app-sidebar"
-import { AppTopbar } from "@/components/layout/app-topbar"
+import { AppSidebar } from "@/components/layout/AppSidebar"
+import { AppTopbar } from "@/components/layout/AppTopbar"
 
 /** Authenticated app frame: persistent sidebar + top bar around the routed page. */
 export function AppShell() {

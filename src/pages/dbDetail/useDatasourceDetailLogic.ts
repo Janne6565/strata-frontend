@@ -25,11 +25,11 @@ export function useDatasourceDetailLogic(id: string) {
   const { run, status: renameStatus } = useDataInteractions()
   const rename = useCallback(
     async (displayName: string): Promise<boolean> => {
-      const updated = await run(() => renameDatasource(id, displayName))
-      if (updated) {
+      const ok = await run(() => renameDatasource(id, displayName))
+      if (ok) {
         refresh()
       }
-      return Boolean(updated)
+      return ok
     },
     [run, refresh, id]
   )

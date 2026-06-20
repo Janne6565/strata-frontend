@@ -1,10 +1,9 @@
-import { useMemo, useState } from "react"
 import { RefreshCw } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
-import { EngineChips } from "@/pages/inventory/engine-chips"
-import { InventoryList } from "@/pages/inventory/inventory-list"
+import { EngineChips } from "@/pages/inventory/EngineChips"
+import { InventoryList } from "@/pages/inventory/InventoryList"
 import { useInventoryLogic } from "@/pages/inventory/useInventoryLogic"
 import { cn } from "@/lib/utils"
 
@@ -12,7 +11,11 @@ export function InventoryPage() {
   const { t } = useTranslation()
   const {
     datasources,
+    shown,
     groups,
+    groupCount,
+    engine,
+    setEngine,
     status,
     reload,
     isAdmin,
@@ -20,33 +23,6 @@ export function InventoryPage() {
     isRescanning,
     isFiltered,
   } = useInventoryLogic()
-  const [engine, setEngine] = useState<string | null>(null)
-
-  const shown = useMemo(
-    () =>
-      engine === null
-        ? datasources
-        : datasources.filter((datasource) => datasource.driver === engine),
-    [datasources, engine]
-  )
-  const groupCount = useMemo(() => {
-    const shownIds = new Set(shown.map((datasource) => datasource.id))
-    const assigned = new Set<string>()
-    let used = 0
-    for (const group of groups) {
-      const has = (group.datasourceIds ?? []).some((id) => shownIds.has(id))
-      if (has) {
-        used += 1
-      }
-      for (const id of group.datasourceIds ?? []) {
-        assigned.add(id)
-      }
-    }
-    const hasUnassigned = shown.some(
-      (datasource) => !(datasource.id && assigned.has(datasource.id))
-    )
-    return used + (hasUnassigned ? 1 : 0)
-  }, [shown, groups])
 
   return (
     <div className="animate-fade-up mx-auto flex max-w-[1280px] flex-col gap-4 p-7">

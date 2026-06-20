@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { ResultGrid } from "@/pages/dbDetail/result-grid"
+import { ResultGrid } from "@/pages/dbDetail/ResultGrid"
 import { useQueryConsoleLogic } from "@/pages/dbDetail/useQueryConsoleLogic"
 
 export function QueryTab({ id }: { readonly id: string }) {

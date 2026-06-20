@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { AppShell } from "@/components/layout/app-shell"
+import { AppShell } from "@/components/layout/AppShell"
 import { requireFullAuth } from "@/lib/auth"
 
 // Pathless layout: guards every child route and wraps them in the app shell.

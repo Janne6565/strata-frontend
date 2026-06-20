@@ -32,7 +32,7 @@ function isTheme(value: string | null): value is Theme {
 }
 
 function getSystemTheme(): ResolvedTheme {
-  if (window.matchMedia(COLOR_SCHEME_QUERY).matches) {
+  if (globalThis.matchMedia(COLOR_SCHEME_QUERY).matches) {
     return "dark"
   }
 
@@ -49,7 +49,7 @@ function disableTransitionsTemporarily() {
   document.head.appendChild(style)
 
   return () => {
-    window.getComputedStyle(document.body)
+    globalThis.getComputedStyle(document.body)
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         style.remove()
@@ -108,7 +108,7 @@ export function ThemeProvider({
       return undefined
     }
 
-    const mediaQuery = window.matchMedia(COLOR_SCHEME_QUERY)
+    const mediaQuery = globalThis.matchMedia(COLOR_SCHEME_QUERY)
     const handleChange = () => {
       applyTheme("system")
     }
@@ -138,10 +138,10 @@ export function ThemeProvider({
       setThemeState(defaultTheme)
     }
 
-    window.addEventListener("storage", handleStorageChange)
+    globalThis.addEventListener("storage", handleStorageChange)
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange)
+      globalThis.removeEventListener("storage", handleStorageChange)
     }
   }, [defaultTheme, storageKey])
 

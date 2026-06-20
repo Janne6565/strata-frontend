@@ -3,7 +3,7 @@ import { Dialog as DialogPrimitive, VisuallyHidden } from "radix-ui"
 import { useTranslation } from "react-i18next"
 
 import type { TableInfo } from "@/api/generated/model"
-import { BrowsePanel } from "@/pages/dbDetail/browse-panel"
+import { BrowsePanel } from "@/pages/dbDetail/BrowsePanel"
 import { useRowBrowserLogic } from "@/pages/dbDetail/useRowBrowserLogic"
 
 export function BrowseTab({

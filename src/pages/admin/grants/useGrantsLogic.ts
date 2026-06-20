@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { create2 as createGrantApi, revoke } from "@/api/generated/grants/grants"
 import type { CreateGrantRequest } from "@/api/generated/model"
-import { extractProblemDetail } from "@/lib/errors"
+import { useDataInteractions } from "@/api/useDataInteractions"
 import { deriveStatus, type LoadStatus } from "@/store/cache"
 import { useDatasources, useUsers } from "@/store/entityHooks"
 import { fetchGrants, removeGrant, upsertGrant } from "@/store/grantsSlice"
@@ -22,20 +22,20 @@ export function useGrantsLogic() {
   const { datasources } = useDatasources()
 
   const [selectedUserId, setSelectedUserId] = useState("")
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const { run, errorMessage, clearError } = useDataInteractions()
   const entry = useAppSelector((state) =>
     selectedUserId === "" ? undefined : state.grants.byUser[selectedUserId]
   )
 
   const selectUser = useCallback(
     (userId: string) => {
-      setErrorMessage(null)
+      clearError()
       setSelectedUserId(userId)
       if (userId !== "") {
         void dispatch(fetchGrants({ userId }))
       }
     },
-    [dispatch]
+    [dispatch, clearError]
   )
 
   const grants = entry?.items ?? []
@@ -43,30 +43,20 @@ export function useGrantsLogic() {
     selectedUserId === "" ? "empty" : entry ? deriveStatus(entry) : "loading"
 
   const createGrant = useCallback(
-    async (request: CreateGrantRequest) => {
-      setErrorMessage(null)
-      try {
+    (request: CreateGrantRequest) =>
+      run(async () => {
         dispatch(upsertGrant(await createGrantApi(request)))
-        return true
-      } catch (error) {
-        setErrorMessage(extractProblemDetail(error) ?? t("grants.error.create"))
-        return false
-      }
-    },
-    [dispatch, t]
+      }, t("grants.error.create")),
+    [run, dispatch, t]
   )
 
   const revokeGrant = useCallback(
-    async (id: string) => {
-      setErrorMessage(null)
-      try {
+    (id: string) =>
+      run(async () => {
         await revoke(id)
         dispatch(removeGrant({ userId: selectedUserId, id }))
-      } catch (error) {
-        setErrorMessage(extractProblemDetail(error) ?? t("grants.error.revoke"))
-      }
-    },
-    [dispatch, selectedUserId, t]
+      }, t("grants.error.revoke")),
+    [run, dispatch, selectedUserId, t]
   )
 
   return {

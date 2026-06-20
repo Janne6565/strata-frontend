@@ -11,8 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { CreateGrantForm } from "@/pages/admin/grants/create-grant-form"
-import { GrantTable } from "@/pages/admin/grants/grant-table"
+import { CreateGrantForm } from "@/pages/admin/grants/CreateGrantForm"
+import { GrantTable } from "@/pages/admin/grants/GrantTable"
 import { useGrantsLogic } from "@/pages/admin/grants/useGrantsLogic"
 
 export function GrantsPage() {

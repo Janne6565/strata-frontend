@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -10,7 +10,7 @@ import {
   reorder as reorderGroups,
 } from "@/api/generated/groups/groups"
 import type { GroupResponse } from "@/api/generated/model"
-import { extractProblemDetail } from "@/lib/errors"
+import { useDataInteractions } from "@/api/useDataInteractions"
 import { moveItem } from "@/lib/reorder"
 import { useDatasources, useGroups } from "@/store/entityHooks"
 import {
@@ -35,70 +35,56 @@ export function useGroupsLogic() {
   const dispatch = useAppDispatch()
   const { groups: rawGroups, status } = useGroups()
   const { datasources } = useDatasources()
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const { run, errorMessage } = useDataInteractions()
 
   const groups = useMemo(() => byPosition(rawGroups), [rawGroups])
 
-  const guard = useCallback(
-    async (action: () => Promise<void>, fallback: string): Promise<boolean> => {
-      setErrorMessage(null)
-      try {
-        await action()
-        return true
-      } catch (error) {
-        setErrorMessage(extractProblemDetail(error) ?? fallback)
-        return false
-      }
-    },
-    []
-  )
-
   const create = useCallback(
     (name: string) =>
-      guard(async () => {
+      run(async () => {
         dispatch(upsertGroup(await createGroup({ name: name.trim() })))
       }, t("groups.error.create")),
-    [guard, dispatch, t]
+    [run, dispatch, t]
   )
 
   const rename = useCallback(
     (id: string, name: string) =>
-      guard(async () => {
+      run(async () => {
         dispatch(upsertGroup(await renameGroup(id, { name: name.trim() })))
       }, t("groups.error.rename")),
-    [guard, dispatch, t]
+    [run, dispatch, t]
   )
 
   const remove = useCallback(
     (id: string) =>
-      guard(async () => {
+      run(async () => {
         await deleteGroup(id)
         dispatch(removeGroup(id))
       }, t("groups.error.delete")),
-    [guard, dispatch, t]
+    [run, dispatch, t]
   )
 
   const addMember = useCallback(
     (groupId: string, datasourceId: string) =>
-      guard(async () => {
+      run(async () => {
         dispatch(upsertGroup(await addMemberApi(groupId, { datasourceId })))
       }, t("groups.error.member")),
-    [guard, dispatch, t]
+    [run, dispatch, t]
   )
 
   const removeMember = useCallback(
     (groupId: string, datasourceId: string) =>
-      guard(async () => {
+      run(async () => {
         dispatch(upsertGroup(await removeMemberApi(groupId, datasourceId)))
       }, t("groups.error.member")),
-    [guard, dispatch, t]
+    [run, dispatch, t]
   )
 
   // Move a datasource between zones: upsert both affected groups (target via
   // addMember, source via removeMember). Null target/source = Unassigned.
   const moveMember = useCallback(
     (datasourceId: string, fromGroupId: string | null, toGroupId: string | null) =>
-      guard(async () => {
+      run(async () => {
         if (toGroupId !== null) {
           dispatch(upsertGroup(await addMemberApi(toGroupId, { datasourceId })))
         }
@@ -106,7 +92,7 @@ export function useGroupsLogic() {
           dispatch(upsertGroup(await removeMemberApi(fromGroupId, datasourceId)))
         }
       }, t("groups.error.member")),
-    [guard, dispatch, t]
+    [run, dispatch, t]
   )
 
   const reorder = useCallback(
@@ -117,19 +103,18 @@ export function useGroupsLogic() {
         position: index,
       }))
       dispatch(setGroups(next))
-      setErrorMessage(null)
-      try {
+      const ok = await run(async () => {
         await reorderGroups({
           groupIds: next
             .map((group) => group.id)
             .filter((id): id is string => id !== undefined),
         })
-      } catch (error) {
-        setErrorMessage(extractProblemDetail(error) ?? t("groups.error.reorder"))
+      }, t("groups.error.reorder"))
+      if (!ok) {
         void dispatch(fetchGroups({ force: true })) // revert to the server order
       }
     },
-    [groups, dispatch, t]
+    [groups, dispatch, run, t]
   )
 
   return {

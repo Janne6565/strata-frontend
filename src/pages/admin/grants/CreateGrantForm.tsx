@@ -9,6 +9,8 @@ import {
   type DatasourceResponse,
 } from "@/api/generated/model"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { FormField } from "@/components/ui/form-field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -18,18 +20,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { isGrantScopeValid } from "@/lib/validators"
+
+interface CreateGrantFormProps {
+  readonly userId: string
+  readonly datasources: readonly DatasourceResponse[]
+  readonly onCreate: (request: CreateGrantRequest) => Promise<boolean>
+  readonly onClose: () => void
+}
 
 export function CreateGrantForm({
   userId,
   datasources,
   onCreate,
   onClose,
-}: {
-  readonly userId: string
-  readonly datasources: readonly DatasourceResponse[]
-  readonly onCreate: (request: CreateGrantRequest) => Promise<boolean>
-  readonly onClose: () => void
-}) {
+}: CreateGrantFormProps) {
   const { t } = useTranslation()
   const [scopeType, setScopeType] = useState<ScopeType>("NAMESPACE")
   const [namespace, setNamespace] = useState("")
@@ -37,8 +42,7 @@ export function CreateGrantForm({
   const [readOnly, setReadOnly] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
-  const invalid =
-    scopeType === "NAMESPACE" ? namespace.trim() === "" : datasourceId === ""
+  const invalid = !isGrantScopeValid(scopeType, namespace, datasourceId)
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -63,8 +67,7 @@ export function CreateGrantForm({
       onSubmit={submit}
       className="flex flex-wrap items-end gap-3 border-b border-border p-4"
     >
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="grant-scope">{t("grants.scope")}</Label>
+      <FormField label={t("grants.scope")} htmlFor="grant-scope">
         <Select
           value={scopeType}
           onValueChange={(value) => setScopeType(value as ScopeType)}
@@ -80,21 +83,20 @@ export function CreateGrantForm({
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
 
       {scopeType === "NAMESPACE" ? (
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="grant-namespace">{t("grants.namespace")}</Label>
+        <FormField label={t("grants.namespace")} htmlFor="grant-namespace">
           <Input
             id="grant-namespace"
+            data-testid="grant-namespace"
             value={namespace}
             placeholder="team-a"
             onChange={(event) => setNamespace(event.target.value)}
           />
-        </div>
+        </FormField>
       ) : (
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="grant-datasource">{t("grants.datasource")}</Label>
+        <FormField label={t("grants.datasource")} htmlFor="grant-datasource">
           <Select
             value={datasourceId === "" ? undefined : datasourceId}
             disabled={datasources.length === 0}
@@ -119,20 +121,27 @@ export function CreateGrantForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
       )}
 
-      <label className="flex h-8 items-center gap-2 text-sm">
-        <input
-          type="checkbox"
+      <div className="flex h-8 items-center gap-2">
+        <Checkbox
+          id="grant-readonly"
           checked={readOnly}
           onChange={(event) => setReadOnly(event.target.checked)}
         />
-        {t("grants.readOnly")}
-      </label>
+        <Label htmlFor="grant-readonly" className="text-sm">
+          {t("grants.readOnly")}
+        </Label>
+      </div>
 
       <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={invalid || submitting}>
+        <Button
+          type="submit"
+          size="sm"
+          data-testid="create-grant-submit"
+          disabled={invalid || submitting}
+        >
           {t("grants.grant")}
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={onClose}>

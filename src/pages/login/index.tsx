@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next"
 
-import { BrandMark } from "@/components/brand-mark"
+import { BrandMark } from "@/components/BrandMark"
+import { FormField } from "@/components/ui/form-field"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useLoginLogic } from "@/pages/login/useLoginLogic"
+import { isNonBlank } from "@/lib/validators"
 
 export function LoginPage() {
   const { t } = useTranslation()
@@ -60,31 +61,31 @@ export function LoginPage() {
           noValidate
           className="flex flex-col gap-4 rounded-2xl border border-white/8 bg-[#101116] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
         >
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="username">{t("login.username")}</Label>
+          <FormField label={t("login.username")} htmlFor="username">
             <Input
               id="username"
               name="username"
+              data-testid="login-username"
               autoComplete="username"
               autoFocus
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               aria-invalid={errorMessage !== null}
             />
-          </div>
+          </FormField>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="password">{t("login.password")}</Label>
+          <FormField label={t("login.password")} htmlFor="password">
             <Input
               id="password"
               name="password"
               type="password"
+              data-testid="login-password"
               autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               aria-invalid={errorMessage !== null}
             />
-          </div>
+          </FormField>
 
           {errorMessage !== null && (
             <p role="alert" className="text-destructive text-sm" data-testid="login-error">
@@ -94,7 +95,8 @@ export function LoginPage() {
 
           <button
             type="submit"
-            disabled={isSubmitting || username.trim() === "" || password === ""}
+            data-testid="login-submit"
+            disabled={isSubmitting || !isNonBlank(username) || password.length === 0}
             className="mt-1 flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white shadow-[0_6px_20px_rgba(100,112,230,0.4)] transition-[filter] hover:brightness-110 disabled:pointer-events-none disabled:opacity-50"
             style={{ background: "linear-gradient(180deg,#6f79e6,#5a64d6)" }}
           >

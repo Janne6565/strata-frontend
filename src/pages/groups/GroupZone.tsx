@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { DbCard } from "@/pages/groups/db-card"
+import { DbCard } from "@/pages/groups/DbCard"
 import { cn } from "@/lib/utils"
 
 export interface Zone {

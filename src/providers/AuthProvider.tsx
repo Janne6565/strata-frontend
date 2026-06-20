@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react"
 import type { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 
 import { me } from "@/api/generated/authentication/authentication"
 import { clearAuthToken, getAuthToken } from "@/lib/auth"
@@ -16,7 +17,12 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks"
  * the user signed in (and a stale token is dropped) before any route guard
  * runs. Children render only once this has settled.
  */
-export function AuthProvider({ children }: { readonly children: ReactNode }) {
+interface AuthProviderProps {
+  readonly children: ReactNode
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const bootstrapped = useAppSelector((state) => state.auth.bootstrapped)
   // StrictMode double-invokes effects in dev; guard so bootstrap runs once.
@@ -51,7 +57,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
   if (!bootstrapped) {
     return (
       <div className="text-muted-foreground flex min-h-screen items-center justify-center text-sm">
-        Loading…
+        {t("common.loading")}
       </div>
     )
   }

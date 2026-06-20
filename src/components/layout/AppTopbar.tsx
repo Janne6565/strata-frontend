@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Search } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import { CommandPalette } from "@/components/command-palette"
+import { CommandPalette } from "@/components/CommandPalette"
 
 export function AppTopbar() {
   const { t } = useTranslation()

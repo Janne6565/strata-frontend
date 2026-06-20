@@ -8,8 +8,8 @@ import {
   type CreateUserRequestRole as Role,
 } from "@/api/generated/model"
 import { Button } from "@/components/ui/button"
+import { FormField } from "@/components/ui/form-field"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -17,24 +17,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { isNonBlank, meetsPasswordPolicy, PASSWORD_MIN } from "@/lib/validators"
 
-const MIN_PASSWORD = 8
 const ROLES = Object.values(CreateUserRequestRole)
 
-export function CreateUserForm({
-  onCreate,
-  onClose,
-}: {
+interface CreateUserFormProps {
   readonly onCreate: (request: CreateUserRequest) => Promise<boolean>
   readonly onClose: () => void
-}) {
+}
+
+export function CreateUserForm({ onCreate, onClose }: CreateUserFormProps) {
   const { t } = useTranslation()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [role, setRole] = useState<Role>("USER")
   const [submitting, setSubmitting] = useState(false)
 
-  const invalid = username.trim() === "" || password.length < MIN_PASSWORD
+  const invalid = !isNonBlank(username) || !meetsPasswordPolicy(password)
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -51,26 +50,25 @@ export function CreateUserForm({
       onSubmit={submit}
       className="flex flex-wrap items-end gap-3 border-b border-border p-4"
     >
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="new-username">{t("users.col.username")}</Label>
+      <FormField label={t("users.col.username")} htmlFor="new-username">
         <Input
           id="new-username"
+          data-testid="new-username"
           value={username}
           autoFocus
           onChange={(event) => setUsername(event.target.value)}
         />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="new-password">{t("login.password")}</Label>
+      </FormField>
+      <FormField label={t("login.password")} htmlFor="new-password">
         <Input
           id="new-password"
+          data-testid="new-password"
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="new-role">{t("users.col.role")}</Label>
+      </FormField>
+      <FormField label={t("users.col.role")} htmlFor="new-role">
         <Select value={role} onValueChange={(value) => setRole(value as Role)}>
           <SelectTrigger id="new-role" className="w-40">
             <SelectValue />
@@ -83,9 +81,14 @@ export function CreateUserForm({
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
       <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={invalid || submitting}>
+        <Button
+          type="submit"
+          size="sm"
+          data-testid="create-user-submit"
+          disabled={invalid || submitting}
+        >
           {t("users.create")}
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={onClose}>
@@ -93,7 +96,7 @@ export function CreateUserForm({
         </Button>
       </div>
       <p className="text-muted-foreground basis-full text-xs">
-        {t("users.passwordHint", { min: MIN_PASSWORD })}
+        {t("users.passwordHint", { min: PASSWORD_MIN })}
       </p>
     </form>
   )
