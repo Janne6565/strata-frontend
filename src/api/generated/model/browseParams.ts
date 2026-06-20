@@ -8,4 +8,7 @@
 export type BrowseParams = {
 offset?: number;
 limit?: number;
+orderBy?: string;
+direction?: string;
+filter?: string[];
 };

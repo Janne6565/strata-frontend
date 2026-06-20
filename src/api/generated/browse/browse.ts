@@ -47,6 +47,7 @@ export const runExecute = (
       options);
     }
   /**
+ * Optional server-side ordering (orderBy + direction ASC/DESC) and column filters. Each filter is 'column:op:value' where op is one of eq, ne, lt, lte, gt, gte, like, isnull, isnotnull (the last two take no value). Sort/filter apply on relational engines; others ignore them.
  * @summary Browse a page of rows from a table
  */
 export const browse = (
