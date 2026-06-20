@@ -50,8 +50,9 @@ export function QueryTab({ id }: { readonly id: string }) {
 
       {query.status === "idle" && query.result && (
         <div className="rounded-xl border border-border bg-card">
-          {query.result.updateCount !== undefined &&
-          query.result.updateCount !== null ? (
+          {/* The backend uses updateCount = -1 to mean "this is a result set"
+              (SELECT); a write returns the affected-row count (>= 0). */}
+          {(query.result.updateCount ?? -1) >= 0 ? (
             <p className="text-muted-foreground p-4 text-sm">
               {t("detail.rowsAffected", { count: query.result.updateCount })}
             </p>
