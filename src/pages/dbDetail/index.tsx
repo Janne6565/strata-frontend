@@ -12,7 +12,15 @@ import { OverviewTab } from "@/pages/dbDetail/overview-tab"
 import { QueryTab } from "@/pages/dbDetail/query-tab"
 import { useDatasourceDetailLogic } from "@/pages/dbDetail/useDatasourceDetailLogic"
 
-export function DatasourceDetailPage({ id }: { readonly id: string }) {
+export function DatasourceDetailPage({
+  id,
+  tab,
+  onTabChange,
+}: {
+  readonly id: string
+  readonly tab: string
+  readonly onTabChange: (tab: string) => void
+}) {
   const { t } = useTranslation()
   const { isAdmin } = useAuthInformation()
   const {
@@ -91,7 +99,7 @@ export function DatasourceDetailPage({ id }: { readonly id: string }) {
         </div>
       </header>
 
-      <Tabs defaultValue="overview">
+      <Tabs value={tab} onValueChange={onTabChange}>
         <TabsList>
           <TabsTrigger value="overview">
             <Gauge />
