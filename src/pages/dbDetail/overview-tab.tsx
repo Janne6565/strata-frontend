@@ -15,11 +15,13 @@ function StatCard({
   icon,
   label,
   value,
+  valueTitle,
   children,
 }: {
   readonly icon: ReactNode
   readonly label: string
   readonly value: string
+  readonly valueTitle?: string
   readonly children: ReactNode
 }) {
   return (
@@ -28,7 +30,9 @@ function StatCard({
         {icon}
         {label}
       </div>
-      <div className="my-2.5 font-mono text-[22px] font-semibold">{value}</div>
+      <div className="my-2.5 font-mono text-[22px] font-semibold" title={valueTitle}>
+        {value}
+      </div>
       {children}
     </div>
   )
@@ -79,6 +83,13 @@ export function OverviewTab({
           icon={<Database className="size-3.5" />}
           label={t("detail.stat.dataSize")}
           value={formatBytes(m?.dataSizeBytes)}
+          valueTitle={
+            m != null && m.dataSizeBytes == null
+              ? t("common.dataSizeUnavailable", {
+                  driver: datasource?.driver ?? "these",
+                })
+              : undefined
+          }
         >
           <div className="text-muted-foreground font-mono text-[11.5px]">
             {m?.objectCount == null

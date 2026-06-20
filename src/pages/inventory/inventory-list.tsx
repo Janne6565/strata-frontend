@@ -179,7 +179,16 @@ export function InventoryList({
                   </div>
                   <Meter pct={m?.cpuPercent} />
                   <Meter pct={m?.memoryPercent} />
-                  <div className="font-mono text-[12px] text-[#9a9ea6]">
+                  <div
+                    className="font-mono text-[12px] text-[#9a9ea6]"
+                    title={
+                      m != null && m.dataSizeBytes == null
+                        ? t("common.dataSizeUnavailable", {
+                            driver: datasource.driver ?? "these",
+                          })
+                        : undefined
+                    }
+                  >
                     {formatBytes(m?.dataSizeBytes)}
                   </div>
                   <div className="font-mono text-[12px] text-[#9a9ea6]">

@@ -10,6 +10,7 @@ export const en = {
     confirm: "Confirm",
     cancel: "Cancel",
     delete: "Delete",
+    dataSizeUnavailable: "Data size isn't available for {{driver}} databases.",
   },
   login: {
     subtitle: "Strata scans your cluster and surfaces every database it finds.",
