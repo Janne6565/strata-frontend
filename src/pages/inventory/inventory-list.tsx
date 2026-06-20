@@ -4,8 +4,15 @@ import { ChevronRight, Layers } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import type { DatasourceResponse, GroupResponse } from "@/api/generated/model"
+import { useDatabaseMetrics } from "@/api/useDatabaseMetrics"
 import { engineStyle, engineTint } from "@/lib/engine"
-import { mockMetrics, meterColor } from "@/lib/mock-metrics"
+import {
+  formatBytes,
+  formatCount,
+  formatPercent,
+  formatPods,
+  meterColor,
+} from "@/lib/metrics"
 
 const COLS =
   "grid-cols-[2.1fr_1fr_0.8fr_1.1fr_1.1fr_1.1fr_1fr_28px] gap-3"
@@ -24,17 +31,21 @@ function isProd(name: string): boolean {
   return /prod/i.test(name)
 }
 
-function Meter({ pct, label }: { readonly pct: number; readonly label: string }) {
+/** A utilization bar + label, or a muted em dash when the metric is unavailable. */
+function Meter({ pct }: { readonly pct: number | null | undefined }) {
+  if (pct == null) {
+    return <div className="text-muted-foreground/50 font-mono text-[12px]">—</div>
+  }
   return (
     <div>
       <div className="h-1 overflow-hidden rounded-[3px] bg-white/[0.07]">
         <span
           className="block h-full"
-          style={{ width: `${pct}%`, background: meterColor(pct) }}
+          style={{ width: `${Math.min(100, pct)}%`, background: meterColor(pct) }}
         />
       </div>
       <div className="text-muted-foreground mt-1 font-mono text-[10.5px]">
-        {label}
+        {formatPercent(pct)}
       </div>
     </div>
   )
@@ -48,6 +59,13 @@ export function InventoryList({
   readonly groups: readonly GroupResponse[]
 }) {
   const { t } = useTranslation()
+
+  // Poll live resource metrics for every visible database in one batched request.
+  const ids = useMemo(
+    () => datasources.map((datasource) => datasource.id ?? "").filter(Boolean),
+    [datasources]
+  )
+  const { metrics } = useDatabaseMetrics(ids)
 
   // Group databases by the group they belong to (from the groups API), not by
   // their cluster namespace. Databases that aren't in any group fall into a
@@ -111,14 +129,14 @@ export function InventoryList({
               <div>{t("databases.col.pods")}</div>
               <div>{t("databases.col.cpu")}</div>
               <div>{t("databases.col.memory")}</div>
-              <div>{t("databases.col.storage")}</div>
+              <div>{t("databases.col.size")}</div>
               <div>{t("databases.col.conns")}</div>
               <div />
             </div>
 
             {group.dbs.map((datasource) => {
               const engine = engineStyle(datasource.driver)
-              const metrics = mockMetrics(datasource.id ?? datasource.discoveryKey ?? "")
+              const m = datasource.id ? metrics.get(datasource.id) : undefined
               const present = datasource.status === "PRESENT"
               const statusColor = present ? "#3ecf8e" : "#e5a53b"
               return (
@@ -157,13 +175,15 @@ export function InventoryList({
                   </div>
 
                   <div className="font-mono text-[12px] text-[#9a9ea6]">
-                    {metrics.pods}/{metrics.pods}
+                    {formatPods(m?.podsReady, m?.podsDesired)}
                   </div>
-                  <Meter pct={metrics.cpuPct} label={`${metrics.cpuPct}%`} />
-                  <Meter pct={metrics.memPct} label={`${metrics.memPct}%`} />
-                  <Meter pct={metrics.storagePct} label={`${metrics.storagePct}%`} />
+                  <Meter pct={m?.cpuPercent} />
+                  <Meter pct={m?.memoryPercent} />
                   <div className="font-mono text-[12px] text-[#9a9ea6]">
-                    {metrics.conns}
+                    {formatBytes(m?.dataSizeBytes)}
+                  </div>
+                  <div className="font-mono text-[12px] text-[#9a9ea6]">
+                    {formatCount(m?.connections)}
                   </div>
                   <div className="text-muted-foreground/60 flex justify-end">
                     <ChevronRight className="size-4" />

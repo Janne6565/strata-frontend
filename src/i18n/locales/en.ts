@@ -77,6 +77,7 @@ export const en = {
     overview: "Overview",
     browse: "Browse",
     query: "Query",
+    rename: "Rename",
     metricsNote: "Live metrics, refreshed every few seconds.",
     stat: {
       conns: "Active connections",

@@ -1,6 +1,8 @@
 import { useCallback, useMemo } from "react"
 
+import { renameDatasource } from "@/api/datasources"
 import { schema as getSchema } from "@/api/generated/browse/browse"
+import { useDataInteractions } from "@/api/useDataInteractions"
 import { useDataLoading } from "@/api/useDataLoading"
 import { extractProblemDetail } from "@/lib/errors"
 import { useDatasources } from "@/store/entityHooks"
@@ -11,12 +13,26 @@ import { useDatasources } from "@/store/entityHooks"
  * introspection fails (e.g. a MISSING datasource the engine can't reach).
  */
 export function useDatasourceDetailLogic(id: string) {
-  const { datasources } = useDatasources()
+  const { datasources, refresh } = useDatasources()
   const datasource = useMemo(
     () => datasources.find((d) => d.id === id),
     [datasources, id]
   )
   const schema = useDataLoading(useCallback(() => getSchema(id), [id]))
+
+  // Rename sets the display name, then force-refreshes the cached catalog so the
+  // new name shows here and in the list. Returns whether the rename succeeded.
+  const { run, status: renameStatus } = useDataInteractions()
+  const rename = useCallback(
+    async (displayName: string): Promise<boolean> => {
+      const updated = await run(() => renameDatasource(id, displayName))
+      if (updated) {
+        refresh()
+      }
+      return Boolean(updated)
+    },
+    [run, refresh, id]
+  )
 
   return {
     datasource,
@@ -26,5 +42,7 @@ export function useDatasourceDetailLogic(id: string) {
     // failed (e.g. no backing service) instead of a generic message.
     schemaError: extractProblemDetail(schema.error),
     reloadSchema: schema.reload,
+    rename,
+    isRenaming: renameStatus === "loading",
   }
 }

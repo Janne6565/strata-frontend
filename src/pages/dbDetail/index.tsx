@@ -4,16 +4,26 @@ import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useAuthInformation } from "@/hooks/useAuthInformation"
 import { engineStyle, engineTint } from "@/lib/engine"
 import { BrowseTab } from "@/pages/dbDetail/browse-tab"
+import { EditableName } from "@/pages/dbDetail/editable-name"
 import { OverviewTab } from "@/pages/dbDetail/overview-tab"
 import { QueryTab } from "@/pages/dbDetail/query-tab"
 import { useDatasourceDetailLogic } from "@/pages/dbDetail/useDatasourceDetailLogic"
 
 export function DatasourceDetailPage({ id }: { readonly id: string }) {
   const { t } = useTranslation()
-  const { datasource, tables, schemaStatus, schemaError, reloadSchema } =
-    useDatasourceDetailLogic(id)
+  const { isAdmin } = useAuthInformation()
+  const {
+    datasource,
+    tables,
+    schemaStatus,
+    schemaError,
+    reloadSchema,
+    rename,
+    isRenaming,
+  } = useDatasourceDetailLogic(id)
 
   // Map the backend's dev-facing messages to friendly copy; pass through the
   // rest (e.g. a missing Secret key), which are already admin-readable.
@@ -54,9 +64,12 @@ export function DatasourceDetailPage({ id }: { readonly id: string }) {
         </span>
         <div className="min-w-0">
           <div className="flex items-center gap-2.5">
-            <h1 className="truncate text-[20px] font-semibold tracking-tight">
-              {name}
-            </h1>
+            <EditableName
+              value={name}
+              canEdit={isAdmin && Boolean(datasource?.id)}
+              isSaving={isRenaming}
+              onSave={rename}
+            />
             {datasource?.status && (
               <span
                 className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[12px]"
