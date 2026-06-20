@@ -5,6 +5,11 @@ import { useTranslation } from "react-i18next"
 import type { DatasourceResponse } from "@/api/generated/model"
 import { useDatabaseMetrics } from "@/api/useDatabaseMetrics"
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
   formatBytes,
   formatCount,
   formatPercent,
@@ -30,8 +35,17 @@ function StatCard({
         {icon}
         {label}
       </div>
-      <div className="my-2.5 font-mono text-[22px] font-semibold" title={valueTitle}>
-        {value}
+      <div className="my-2.5 font-mono text-[22px] font-semibold">
+        {valueTitle ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="cursor-help">{value}</span>
+            </TooltipTrigger>
+            <TooltipContent>{valueTitle}</TooltipContent>
+          </Tooltip>
+        ) : (
+          value
+        )}
       </div>
       {children}
     </div>

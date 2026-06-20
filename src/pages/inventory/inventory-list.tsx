@@ -5,6 +5,11 @@ import { useTranslation } from "react-i18next"
 
 import type { DatasourceResponse, GroupResponse } from "@/api/generated/model"
 import { useDatabaseMetrics } from "@/api/useDatabaseMetrics"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { engineStyle, engineTint } from "@/lib/engine"
 import {
   formatBytes,
@@ -179,17 +184,23 @@ export function InventoryList({
                   </div>
                   <Meter pct={m?.cpuPercent} />
                   <Meter pct={m?.memoryPercent} />
-                  <div
-                    className="font-mono text-[12px] text-[#9a9ea6]"
-                    title={
-                      m != null && m.dataSizeBytes == null
-                        ? t("common.dataSizeUnavailable", {
+                  <div className="font-mono text-[12px] text-[#9a9ea6]">
+                    {m != null && m.dataSizeBytes == null ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help">
+                            {formatBytes(m?.dataSizeBytes)}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {t("common.dataSizeUnavailable", {
                             driver: datasource.driver ?? "these",
-                          })
-                        : undefined
-                    }
-                  >
-                    {formatBytes(m?.dataSizeBytes)}
+                          })}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      formatBytes(m?.dataSizeBytes)
+                    )}
                   </div>
                   <div className="font-mono text-[12px] text-[#9a9ea6]">
                     {formatCount(m?.connections)}
