@@ -4,6 +4,17 @@ import { Layers, X } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import type { DatasourceResponse } from "@/api/generated/model"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { DbCard } from "@/pages/groups/db-card"
 import { cn } from "@/lib/utils"
 
@@ -85,14 +96,32 @@ export function GroupZone({
           {zone.dbs.length}
         </span>
         {zone.id !== null && (
-          <button
-            type="button"
-            aria-label={t("common.delete")}
-            onClick={() => onDelete(zone.id as string)}
-            className="text-muted-foreground hover:bg-destructive/12 hover:text-destructive flex size-6 shrink-0 items-center justify-center rounded-md"
-          >
-            <X className="size-3.5" />
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger
+              type="button"
+              aria-label={t("common.delete")}
+              className="text-muted-foreground hover:bg-destructive/12 hover:text-destructive flex size-6 shrink-0 items-center justify-center rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <X className="size-3.5" />
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t("groups.deleteTitle")}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t("groups.deleteConfirm", { name: zone.name })}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  onClick={() => onDelete(zone.id as string)}
+                >
+                  {t("common.delete")}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
       </div>
 

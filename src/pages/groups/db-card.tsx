@@ -39,7 +39,7 @@ export function DbCard({
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       className={cn(
-        "flex items-center gap-2.5 rounded-[11px] border border-white/[0.07] bg-[#0f1014] px-3 py-2.5",
+        "flex cursor-grab items-center gap-2.5 rounded-[11px] border border-white/[0.07] bg-[#0f1014] px-3 py-2.5 select-none active:cursor-grabbing",
         dragging && "opacity-40"
       )}
     >
@@ -76,7 +76,7 @@ export function DbCard({
           type="button"
           aria-label={t("common.delete")}
           onClick={onRemove}
-          className="text-muted-foreground hover:text-destructive shrink-0"
+          className="text-muted-foreground hover:text-destructive shrink-0 cursor-pointer"
         >
           <X className="size-3.5" />
         </button>
