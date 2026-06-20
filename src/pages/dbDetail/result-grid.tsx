@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import type { SortState } from "@/pages/dbDetail/filters"
+import { parseTimestamp } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
 // Above this rendered length a cell is likely truncated, so it becomes click-to-expand.
@@ -38,15 +39,25 @@ export function ResultGrid({
   rows,
   sort,
   onToggleSort,
+  hiddenColumns,
+  timeColumns,
 }: {
   readonly columns?: readonly string[]
   readonly rows?: readonly unknown[][]
   readonly sort?: SortState | null
   readonly onToggleSort?: (column: string) => void
+  /** Columns to drop entirely — e.g. Flux bookkeeping columns for Influx. */
+  readonly hiddenColumns?: ReadonlySet<string>
+  /** Columns whose values are timestamps and should render as readable dates. */
+  readonly timeColumns?: ReadonlySet<string>
 }) {
   const { t } = useTranslation()
-  const cols = columns ?? []
+  const allCols = columns ?? []
   const data = rows ?? []
+  // Visible columns keep their original row index so cells stay aligned.
+  const visible = allCols
+    .map((name, index) => ({ name, index }))
+    .filter(({ name }) => !hiddenColumns?.has(name))
   const [expanded, setExpanded] = useState<{
     column: string
     text: string
@@ -66,7 +77,7 @@ export function ResultGrid({
         <table className="w-full text-left font-mono text-xs">
           <thead className="sticky top-0 bg-card text-muted-foreground">
             <tr className="border-b border-border">
-              {cols.map((col) => {
+              {visible.map(({ name: col }) => {
                 const active = sort?.column === col
                 return (
                   <th
@@ -104,8 +115,23 @@ export function ResultGrid({
                 key={rowIndex}
                 className="border-b border-border/50 last:border-0 hover:bg-muted/30"
               >
-                {row.map((cell, cellIndex) => {
+                {visible.map(({ name: col, index: cellIndex }) => {
+                  const cell = row[cellIndex]
                   const isNull = cell === null || cell === undefined
+                  const time = timeColumns?.has(col)
+                    ? parseTimestamp(cell)
+                    : null
+                  if (time) {
+                    return (
+                      <td
+                        key={cellIndex}
+                        className="max-w-xs px-3 py-1.5 tabular-nums whitespace-nowrap text-muted-foreground"
+                        title={time.raw}
+                      >
+                        <span className="text-foreground">{time.full}</span>
+                      </td>
+                    )
+                  }
                   const text = renderCell(cell)
                   const expandable =
                     !isNull &&
@@ -124,7 +150,7 @@ export function ResultGrid({
                           title={t("detail.expandCell")}
                           onClick={() =>
                             setExpanded({
-                              column: cols[cellIndex] ?? "",
+                              column: col,
                               text: fullCell(cell),
                             })
                           }

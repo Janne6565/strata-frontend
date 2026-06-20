@@ -134,7 +134,9 @@ export function DatasourceDetailPage({ id }: { readonly id: string }) {
               </Button>
             </div>
           )}
-          {schemaStatus === "idle" && <BrowseTab id={id} tables={tables} />}
+          {schemaStatus === "idle" && (
+            <BrowseTab id={id} tables={tables} driver={datasource?.driver} />
+          )}
         </TabsContent>
 
         <TabsContent value="query">

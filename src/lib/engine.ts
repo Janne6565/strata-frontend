@@ -19,6 +19,26 @@ const ENGINES: Record<string, EngineStyle> = {
   loki: { short: "LK", color: "#e5a53b" },
 }
 
+/**
+ * How an engine's rows are best presented: logs as a stream, time-series in a
+ * timestamp-aware grid, everything else as a plain SQL table.
+ */
+export type EngineKind = "log" | "timeseries" | "sql"
+
+const LOG_ENGINES = new Set(["loki"])
+const TIMESERIES_ENGINES = new Set(["influxdb", "influx"])
+
+export function engineKind(driver?: string): EngineKind {
+  const key = (driver ?? "").toLowerCase()
+  if (LOG_ENGINES.has(key)) {
+    return "log"
+  }
+  if (TIMESERIES_ENGINES.has(key)) {
+    return "timeseries"
+  }
+  return "sql"
+}
+
 export function engineStyle(driver?: string): EngineStyle {
   const key = (driver ?? "").toLowerCase()
   return (

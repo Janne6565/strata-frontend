@@ -88,6 +88,12 @@ export const en = {
     clearFilters: "Clear all",
     expandCell: "Show full value",
     copy: "Copy",
+    logs: {
+      empty: "No log lines in the selected window.",
+      expand: "Show full log entry",
+      message: "Message",
+      labels: "Labels",
+    },
     metricsNote: "Live metrics, refreshed every few seconds.",
     stat: {
       conns: "Active connections",

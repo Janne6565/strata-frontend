@@ -32,15 +32,19 @@ export function FilterBar({
   columns,
   filters,
   onChange,
+  ops,
 }: {
   readonly columns: readonly ColumnInfo[]
   readonly filters: readonly ColumnFilter[]
   readonly onChange: (filters: readonly ColumnFilter[]) => void
+  /** Operators to offer; defaults to all. Log engines only allow equality. */
+  readonly ops?: readonly FilterOp[]
 }) {
   const { t } = useTranslation()
   const names = columns.map((column) => column.name ?? "").filter(Boolean)
+  const operators = ops ? OPS.filter((entry) => ops.includes(entry.value)) : OPS
   const [column, setColumn] = useState("")
-  const [op, setOp] = useState<FilterOp>("eq")
+  const [op, setOp] = useState<FilterOp>(operators[0]?.value ?? "eq")
   const [value, setValue] = useState("")
 
   const effectiveColumn = column || names[0] || ""
@@ -77,18 +81,24 @@ export function FilterBar({
             </option>
           ))}
         </select>
-        <select
-          className={SELECT}
-          value={op}
-          onChange={(event) => setOp(event.target.value as FilterOp)}
-          aria-label={t("detail.filterOp")}
-        >
-          {OPS.map((entry) => (
-            <option key={entry.value} value={entry.value}>
-              {entry.label}
-            </option>
-          ))}
-        </select>
+        {operators.length > 1 ? (
+          <select
+            className={SELECT}
+            value={op}
+            onChange={(event) => setOp(event.target.value as FilterOp)}
+            aria-label={t("detail.filterOp")}
+          >
+            {operators.map((entry) => (
+              <option key={entry.value} value={entry.value}>
+                {entry.label}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <span className="px-1 font-mono text-xs text-muted-foreground">
+            {operators[0]?.label}
+          </span>
+        )}
         {needsValue && (
           <Input
             value={value}

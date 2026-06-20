@@ -9,9 +9,11 @@ import { useRowBrowserLogic } from "@/pages/dbDetail/useRowBrowserLogic"
 export function BrowseTab({
   id,
   tables,
+  driver,
 }: {
   readonly id: string
   readonly tables: readonly TableInfo[]
+  readonly driver?: string
 }) {
   const { t } = useTranslation()
   const browser = useRowBrowserLogic(id)
@@ -23,6 +25,7 @@ export function BrowseTab({
         <BrowsePanel
           browser={browser}
           tables={tables}
+          driver={driver}
           enlarged={false}
           onToggleEnlarge={() => setEnlarged(true)}
         />
@@ -45,6 +48,7 @@ export function BrowseTab({
             <BrowsePanel
               browser={browser}
               tables={tables}
+              driver={driver}
               enlarged
               onToggleEnlarge={() => setEnlarged(false)}
             />
