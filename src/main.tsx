@@ -6,7 +6,7 @@ import { Provider } from "react-redux"
 
 import "./index.css"
 import "@/i18n"
-import { ThemeProvider } from "@/components/theme-provider.tsx"
+import { ThemeProvider } from "@/components/ThemeProvider"
 import { AuthProvider } from "@/providers/AuthProvider"
 import { store } from "@/store/store"
 import { routeTree } from "@/routeTree.gen"

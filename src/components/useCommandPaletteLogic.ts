@@ -62,7 +62,11 @@ export function useCommandPaletteLogic(
         return
       }
       onOpenChange(false)
-      void navigate({ to: "/databases/$id", params: { id: datasource.id ?? "" } })
+      void navigate({
+        to: "/databases/$id",
+        params: { id: datasource.id ?? "" },
+        search: { tab: "overview" },
+      })
     },
     [navigate, onOpenChange]
   )

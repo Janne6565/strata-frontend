@@ -149,6 +149,7 @@ export function InventoryList({
                   key={datasource.id ?? datasource.discoveryKey}
                   to="/databases/$id"
                   params={{ id: datasource.id ?? "" }}
+                  search={{ tab: "overview" }}
                   className={`grid ${COLS} items-center border-b border-border/40 px-4 py-3 last:border-0 hover:bg-white/[0.025]`}
                 >
                   <div className="flex min-w-0 items-center gap-3">
