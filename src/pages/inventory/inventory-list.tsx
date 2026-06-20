@@ -136,7 +136,7 @@ export function InventoryList({
                       {engine.short}
                     </span>
                     <div className="min-w-0">
-                      <div className="truncate font-medium text-foreground">
+                      <div className="truncate text-[13px] font-medium text-foreground">
                         {name(datasource)}
                       </div>
                       <div className="text-muted-foreground truncate font-mono text-[11px]">
