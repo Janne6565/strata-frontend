@@ -98,7 +98,14 @@ export const en = {
   },
   groups: {
     title: "Groups",
-    subtitle: "Drag databases onto a group, or drag groups to reorder.",
+    subtitle:
+      "Organize databases into your own logical groups. Drag a card between groups — it's just a label, it doesn't move anything in the cluster.",
+    newGroup: "New group",
+    newGroupName: "New group",
+    unassigned: "Unassigned",
+    dropHere: "Drag databases here",
+    legend: "Legend",
+    degraded: "Missing",
     add: "Add",
     rename: "Rename",
     namePlaceholder: "New group name",

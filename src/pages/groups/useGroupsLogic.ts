@@ -93,6 +93,22 @@ export function useGroupsLogic() {
     [guard, t]
   )
 
+  // Move a datasource between zones: add to the target group (null = Unassigned)
+  // and remove from the source group, in one reload. Gives the board its
+  // drag-a-card-between-groups feel on top of the add/remove membership API.
+  const moveMember = useCallback(
+    (datasourceId: string, fromGroupId: string | null, toGroupId: string | null) =>
+      guard(async () => {
+        if (toGroupId !== null) {
+          await addMemberApi(toGroupId, { datasourceId })
+        }
+        if (fromGroupId !== null && fromGroupId !== toGroupId) {
+          await removeMemberApi(fromGroupId, datasourceId)
+        }
+      }, t("groups.error.member")),
+    [guard, t]
+  )
+
   const reorder = useCallback(
     async (from: number, to: number) => {
       const next = moveItem(groups, from, to)
@@ -122,5 +138,6 @@ export function useGroupsLogic() {
     reorder,
     addMember,
     removeMember,
+    moveMember,
   }
 }
