@@ -4,7 +4,13 @@ import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { NativeSelect } from "@/components/ui/native-select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { CreateGrantForm } from "@/pages/admin/grants/create-grant-form"
 import { GrantTable } from "@/pages/admin/grants/grant-table"
 import { useGrantsLogic } from "@/pages/admin/grants/useGrantsLogic"
@@ -41,22 +47,24 @@ export function GrantsPage() {
 
       <div className="flex items-center gap-2">
         <Label htmlFor="grant-user">{t("grants.user")}</Label>
-        <NativeSelect
-          id="grant-user"
-          value={selectedUserId}
-          className="max-w-xs"
-          onChange={(event) => {
+        <Select
+          value={selectedUserId === "" ? undefined : selectedUserId}
+          onValueChange={(value) => {
             setShowForm(false)
-            selectUser(event.target.value)
+            selectUser(value)
           }}
         >
-          <option value="">{t("grants.pickUser")}</option>
-          {users.map((user) => (
-            <option key={user.id} value={user.id}>
-              {user.username}
-            </option>
-          ))}
-        </NativeSelect>
+          <SelectTrigger id="grant-user" className="w-full max-w-xs">
+            <SelectValue placeholder={t("grants.pickUser")} />
+          </SelectTrigger>
+          <SelectContent>
+            {users.map((user) => (
+              <SelectItem key={user.id} value={user.id ?? ""}>
+                {user.username}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {errorMessage !== null && (

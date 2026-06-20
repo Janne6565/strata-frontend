@@ -5,131 +5,136 @@ import {
   addMember as addMemberApi,
   create1 as createGroup,
   _delete as deleteGroup,
-  list1 as listGroups,
   removeMember as removeMemberApi,
   rename as renameGroup,
   reorder as reorderGroups,
 } from "@/api/generated/groups/groups"
-import { list2 as listDatasources } from "@/api/generated/inventory/inventory"
 import type { GroupResponse } from "@/api/generated/model"
-import { useDataLoading } from "@/api/useDataLoading"
 import { extractProblemDetail } from "@/lib/errors"
 import { moveItem } from "@/lib/reorder"
+import { useDatasources, useGroups } from "@/store/entityHooks"
+import {
+  fetchGroups,
+  removeGroup,
+  setGroups,
+  upsertGroup,
+} from "@/store/groupsSlice"
+import { useAppDispatch } from "@/store/hooks"
 
 function byPosition(groups: readonly GroupResponse[]): GroupResponse[] {
   return [...groups].sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
 }
 
 /**
- * Lists the caller's groups and manages create / rename / delete / reorder.
- * Reorder is applied optimistically via a local order override, then persisted;
- * a failure (or any other mutation) clears the override and reloads from server.
+ * Manages groups against the cached `groups` slice: create / rename / delete and
+ * membership upsert the affected group(s) back into the store (no full refetch),
+ * so screens stay in sync without re-requesting the list.
  */
 export function useGroupsLogic() {
   const { t } = useTranslation()
-  const loader = useCallback(() => listGroups(), [])
-  const { data, status, reload } = useDataLoading(loader)
-  const { data: datasources } = useDataLoading(
-    useCallback(() => listDatasources(), [])
-  )
-  const [override, setOverride] = useState<GroupResponse[] | null>(null)
+  const dispatch = useAppDispatch()
+  const { groups: rawGroups, status } = useGroups()
+  const { datasources } = useDatasources()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // Derived during render: the optimistic order if a reorder is pending,
-  // otherwise the server order. No state-syncing effect needed.
-  const groups = useMemo(
-    () => override ?? byPosition(data ?? []),
-    [override, data]
-  )
+  const groups = useMemo(() => byPosition(rawGroups), [rawGroups])
 
   const guard = useCallback(
-    async (action: () => Promise<unknown>, fallback: string) => {
+    async (action: () => Promise<void>, fallback: string): Promise<boolean> => {
       setErrorMessage(null)
       try {
         await action()
-        setOverride(null) // fall back to fresh server order
-        reload()
         return true
       } catch (error) {
         setErrorMessage(extractProblemDetail(error) ?? fallback)
         return false
       }
     },
-    [reload]
+    []
   )
 
   const create = useCallback(
     (name: string) =>
-      guard(() => createGroup({ name: name.trim() }), t("groups.error.create")),
-    [guard, t]
+      guard(async () => {
+        dispatch(upsertGroup(await createGroup({ name: name.trim() })))
+      }, t("groups.error.create")),
+    [guard, dispatch, t]
   )
 
   const rename = useCallback(
     (id: string, name: string) =>
-      guard(() => renameGroup(id, { name: name.trim() }), t("groups.error.rename")),
-    [guard, t]
+      guard(async () => {
+        dispatch(upsertGroup(await renameGroup(id, { name: name.trim() })))
+      }, t("groups.error.rename")),
+    [guard, dispatch, t]
   )
 
   const remove = useCallback(
-    (id: string) => guard(() => deleteGroup(id), t("groups.error.delete")),
-    [guard, t]
+    (id: string) =>
+      guard(async () => {
+        await deleteGroup(id)
+        dispatch(removeGroup(id))
+      }, t("groups.error.delete")),
+    [guard, dispatch, t]
   )
 
   const addMember = useCallback(
     (groupId: string, datasourceId: string) =>
-      guard(
-        () => addMemberApi(groupId, { datasourceId }),
-        t("groups.error.member")
-      ),
-    [guard, t]
+      guard(async () => {
+        dispatch(upsertGroup(await addMemberApi(groupId, { datasourceId })))
+      }, t("groups.error.member")),
+    [guard, dispatch, t]
   )
 
   const removeMember = useCallback(
     (groupId: string, datasourceId: string) =>
-      guard(
-        () => removeMemberApi(groupId, datasourceId),
-        t("groups.error.member")
-      ),
-    [guard, t]
+      guard(async () => {
+        dispatch(upsertGroup(await removeMemberApi(groupId, datasourceId)))
+      }, t("groups.error.member")),
+    [guard, dispatch, t]
   )
 
-  // Move a datasource between zones: add to the target group (null = Unassigned)
-  // and remove from the source group, in one reload. Gives the board its
-  // drag-a-card-between-groups feel on top of the add/remove membership API.
+  // Move a datasource between zones: upsert both affected groups (target via
+  // addMember, source via removeMember). Null target/source = Unassigned.
   const moveMember = useCallback(
     (datasourceId: string, fromGroupId: string | null, toGroupId: string | null) =>
       guard(async () => {
         if (toGroupId !== null) {
-          await addMemberApi(toGroupId, { datasourceId })
+          dispatch(upsertGroup(await addMemberApi(toGroupId, { datasourceId })))
         }
         if (fromGroupId !== null && fromGroupId !== toGroupId) {
-          await removeMemberApi(fromGroupId, datasourceId)
+          dispatch(upsertGroup(await removeMemberApi(fromGroupId, datasourceId)))
         }
       }, t("groups.error.member")),
-    [guard, t]
+    [guard, dispatch, t]
   )
 
   const reorder = useCallback(
     async (from: number, to: number) => {
-      const next = moveItem(groups, from, to)
-      setOverride(next) // optimistic
+      // Optimistic: reindex positions so the cached order survives re-sorting.
+      const next = moveItem(groups, from, to).map((group, index) => ({
+        ...group,
+        position: index,
+      }))
+      dispatch(setGroups(next))
       setErrorMessage(null)
       try {
         await reorderGroups({
-          groupIds: next.map((group) => group.id).filter((id) => id !== undefined),
+          groupIds: next
+            .map((group) => group.id)
+            .filter((id): id is string => id !== undefined),
         })
       } catch (error) {
         setErrorMessage(extractProblemDetail(error) ?? t("groups.error.reorder"))
-        setOverride(null)
-        reload() // revert to the server's order
+        void dispatch(fetchGroups({ force: true })) // revert to the server order
       }
     },
-    [groups, reload, t]
+    [groups, dispatch, t]
   )
 
   return {
     groups,
-    datasources: datasources ?? [],
+    datasources,
     status,
     errorMessage,
     create,

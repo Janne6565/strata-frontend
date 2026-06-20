@@ -9,7 +9,13 @@ import {
 } from "@/api/generated/model"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { NativeSelect } from "@/components/ui/native-select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const ROLES = Object.values(ChangeRoleRequestRole)
 
@@ -56,19 +62,24 @@ export function UserTable({
                 )}
               </td>
               <td className="px-4 py-2.5">
-                <NativeSelect
+                <Select
                   value={user.role}
                   disabled={isSelf}
-                  onChange={(event) =>
-                    user.id && onChangeRole(user.id, event.target.value as Role)
+                  onValueChange={(value) =>
+                    user.id && onChangeRole(user.id, value as Role)
                   }
                 >
-                  {ROLES.map((role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </NativeSelect>
+                  <SelectTrigger size="sm" className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROLES.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </td>
               <td className="px-4 py-2.5">
                 <Badge variant={user.enabled ? "success" : "outline"}>

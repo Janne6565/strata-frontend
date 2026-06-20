@@ -10,8 +10,16 @@ import { cn } from "@/lib/utils"
 
 export function InventoryPage() {
   const { t } = useTranslation()
-  const { datasources, status, reload, isAdmin, rescan, isRescanning, isFiltered } =
-    useInventoryLogic()
+  const {
+    datasources,
+    groups,
+    status,
+    reload,
+    isAdmin,
+    rescan,
+    isRescanning,
+    isFiltered,
+  } = useInventoryLogic()
   const [engine, setEngine] = useState<string | null>(null)
 
   const shown = useMemo(
@@ -21,10 +29,24 @@ export function InventoryPage() {
         : datasources.filter((datasource) => datasource.driver === engine),
     [datasources, engine]
   )
-  const namespaces = useMemo(
-    () => new Set(shown.map((datasource) => datasource.namespace ?? "—")).size,
-    [shown]
-  )
+  const groupCount = useMemo(() => {
+    const shownIds = new Set(shown.map((datasource) => datasource.id))
+    const assigned = new Set<string>()
+    let used = 0
+    for (const group of groups) {
+      const has = (group.datasourceIds ?? []).some((id) => shownIds.has(id))
+      if (has) {
+        used += 1
+      }
+      for (const id of group.datasourceIds ?? []) {
+        assigned.add(id)
+      }
+    }
+    const hasUnassigned = shown.some(
+      (datasource) => !(datasource.id && assigned.has(datasource.id))
+    )
+    return used + (hasUnassigned ? 1 : 0)
+  }, [shown, groups])
 
   return (
     <div className="animate-fade-up mx-auto flex max-w-[1280px] flex-col gap-4 p-7">
@@ -34,7 +56,7 @@ export function InventoryPage() {
             {t("databases.title")}
           </h1>
           <p className="text-muted-foreground mt-1 text-[13px]">
-            {t("databases.subtitle", { count: shown.length, namespaces })}
+            {t("databases.subtitle", { count: shown.length, groups: groupCount })}
             <span className="mx-1.5 opacity-40">·</span>
             <span className="opacity-70">{t("databases.metricsNote")}</span>
           </p>
@@ -73,7 +95,9 @@ export function InventoryPage() {
           {isFiltered ? t("databases.empty.filtered") : t("databases.empty.none")}
         </p>
       )}
-      {status === "idle" && shown.length > 0 && <InventoryList datasources={shown} />}
+      {status === "idle" && shown.length > 0 && (
+        <InventoryList datasources={shown} groups={groups} />
+      )}
     </div>
   )
 }

@@ -1,17 +1,20 @@
 import { useCallback, useMemo } from "react"
 
-import {
-  list2 as listDatasources,
-  rescan as rescanCluster,
-} from "@/api/generated/inventory/inventory"
+import { rescan as rescanCluster } from "@/api/generated/inventory/inventory"
+import type { GroupResponse } from "@/api/generated/model"
 import { useDataInteractions } from "@/api/useDataInteractions"
-import { useDataLoading } from "@/api/useDataLoading"
 import { useAuthInformation } from "@/hooks/useAuthInformation"
+import { useDatasources, useGroups } from "@/store/entityHooks"
 import { useAppSelector } from "@/store/hooks"
 
+function byPosition(groups: readonly GroupResponse[]): GroupResponse[] {
+  return [...groups].sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+}
+
 /**
- * Loads the datasource catalog, filters it by the global search query, and
- * (for admins) exposes a rescan that reconciles the cluster then reloads.
+ * Reads the cached datasource catalog + groups from the store (fetched once and
+ * reused across screens), filters by the global search query, and exposes a
+ * rescan that reconciles the cluster then force-refreshes the catalog.
  */
 export function useInventoryLogic() {
   const { isAdmin } = useAuthInformation()
@@ -19,12 +22,13 @@ export function useInventoryLogic() {
     .trim()
     .toLowerCase()
 
-  const loader = useCallback(() => listDatasources(), [])
-  const { data, status, error, reload } = useDataLoading(loader)
+  const { datasources: all, status, refresh } = useDatasources()
+  const { groups: rawGroups } = useGroups()
   const { status: rescanStatus, run } = useDataInteractions()
 
+  const groups = useMemo(() => byPosition(rawGroups), [rawGroups])
+
   const datasources = useMemo(() => {
-    const all = data ?? []
     if (search === "") {
       return all
     }
@@ -36,24 +40,23 @@ export function useInventoryLogic() {
         datasource.workloadName,
       ].some((field) => field?.toLowerCase().includes(search))
     )
-  }, [data, search])
+  }, [all, search])
 
   const rescan = useCallback(async () => {
     const summary = await run(() => rescanCluster())
     if (summary) {
-      reload()
+      refresh()
     }
-  }, [run, reload])
+  }, [run, refresh])
 
   return {
     datasources,
+    groups,
     status,
-    error,
-    reload,
+    reload: refresh,
     isAdmin,
     rescan,
     isRescanning: rescanStatus === "loading",
     isFiltered: search !== "",
-    total: data?.length ?? 0,
   }
 }

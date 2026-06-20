@@ -3,18 +3,12 @@ import { act, renderHook, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import "@/i18n"
-import {
-  changeRole,
-  create,
-  delete1,
-  list,
-} from "@/api/generated/users/users"
+import { changeRole, create, delete1, list } from "@/api/generated/users/users"
 import { useUsersLogic } from "@/pages/admin/users/useUsersLogic"
 import type { AuthState } from "@/store/authSlice"
 import { makeWrapper } from "@/test/makeWrapper"
 
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => vi.fn() }))
-
 vi.mock("@/api/generated/users/users", () => ({
   list: vi.fn(),
   create: vi.fn(),
@@ -48,14 +42,14 @@ describe("useUsersLogic", () => {
     ])
   })
 
-  it("loads users and exposes the current user id", async () => {
+  it("loads users from the cache and exposes the current user id", async () => {
     const { result } = render()
     await waitFor(() => expect(result.current.status).toBe("idle"))
     expect(result.current.users).toHaveLength(1)
     expect(result.current.currentUserId).toBe("owner-id")
   })
 
-  it("creates a user then reloads the list", async () => {
+  it("creates a user and upserts it into the store without refetching", async () => {
     mockedCreate.mockResolvedValueOnce({
       id: "u2",
       username: "bob",
@@ -80,7 +74,10 @@ describe("useUsersLogic", () => {
       password: "password1",
       role: "USER",
     })
-    await waitFor(() => expect(mockedList).toHaveBeenCalledTimes(2))
+    await waitFor(() =>
+      expect(result.current.users.map((u) => u.id)).toContain("u2")
+    )
+    expect(mockedList).toHaveBeenCalledTimes(1) // upsert, not refetch
   })
 
   it("surfaces the ProblemDetail when a mutation fails", async () => {
@@ -109,10 +106,10 @@ describe("useUsersLogic", () => {
     expect(result.current.errorMessage).toBe("Username already exists")
   })
 
-  it("changes a role and deletes through the API", async () => {
+  it("changes a role and deletes through the API + store", async () => {
     mockedChangeRole.mockResolvedValueOnce({
-      id: "u2",
-      username: "bob",
+      id: "owner-id",
+      username: "owner",
       role: "ADMIN",
       enabled: true,
     })
@@ -121,13 +118,17 @@ describe("useUsersLogic", () => {
     await waitFor(() => expect(result.current.status).toBe("idle"))
 
     await act(async () => {
-      await result.current.changeRole("u2", "ADMIN")
+      await result.current.changeRole("owner-id", "ADMIN")
     })
-    expect(mockedChangeRole).toHaveBeenCalledWith("u2", { role: "ADMIN" })
+    expect(mockedChangeRole).toHaveBeenCalledWith("owner-id", { role: "ADMIN" })
+    await waitFor(() =>
+      expect(result.current.users[0]?.role).toBe("ADMIN")
+    )
 
     await act(async () => {
-      await result.current.removeUser("u2")
+      await result.current.removeUser("owner-id")
     })
-    expect(mockedDelete).toHaveBeenCalledWith("u2")
+    expect(mockedDelete).toHaveBeenCalledWith("owner-id")
+    await waitFor(() => expect(result.current.users).toHaveLength(0))
   })
 })

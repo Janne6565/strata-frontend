@@ -35,7 +35,7 @@ export const en = {
   },
   databases: {
     title: "Databases",
-    subtitle: "{{count}} instances across {{namespaces}} namespaces",
+    subtitle: "{{count}} instances across {{groups}} groups",
     metricsNote: "Resource metrics are placeholder data.",
     rescan: "Rescan",
     rescanning: "Rescanning…",
@@ -81,6 +81,10 @@ export const en = {
     },
     unknownEngine: "Unknown engine",
     schemaError: "Couldn't introspect this datasource.",
+    schemaNoService:
+      "It has no backing Kubernetes service, so Strata can't determine a host and port to connect to. Add a host/port via a manual override, or re-run discovery once it has a matching service.",
+    schemaNoCredentials:
+      "No resolved credentials are stored for it, so Strata can't authenticate. Supply credentials via a manual override.",
     noTables: "No tables found.",
     pickTable: "Select a table to browse its rows.",
     rowRange: "Rows {{from}}–{{to}}",

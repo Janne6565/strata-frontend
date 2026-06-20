@@ -10,7 +10,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { NativeSelect } from "@/components/ui/native-select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const MIN_PASSWORD = 8
 const ROLES = Object.values(CreateUserRequestRole)
@@ -65,17 +71,18 @@ export function CreateUserForm({
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="new-role">{t("users.col.role")}</Label>
-        <NativeSelect
-          id="new-role"
-          value={role}
-          onChange={(event) => setRole(event.target.value as Role)}
-        >
-          {ROLES.map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </NativeSelect>
+        <Select value={role} onValueChange={(value) => setRole(value as Role)}>
+          <SelectTrigger id="new-role" className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ROLES.map((value) => (
+              <SelectItem key={value} value={value}>
+                {value}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex items-center gap-2">
         <Button type="submit" size="sm" disabled={invalid || submitting}>

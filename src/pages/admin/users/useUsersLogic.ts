@@ -5,64 +5,72 @@ import {
   changeRole as changeUserRole,
   create as createUserApi,
   delete1 as deleteUserApi,
-  list as listUsers,
 } from "@/api/generated/users/users"
 import type {
   ChangeRoleRequestRole,
   CreateUserRequest,
 } from "@/api/generated/model"
-import { useDataLoading } from "@/api/useDataLoading"
 import { useAuthInformation } from "@/hooks/useAuthInformation"
 import { extractProblemDetail } from "@/lib/errors"
+import { useUsers } from "@/store/entityHooks"
+import { useAppDispatch } from "@/store/hooks"
+import { removeUser as removeUserFromStore, upsertUser } from "@/store/usersSlice"
 
 /**
- * Lists users and exposes create / change-role / delete. Mutations call the API
- * directly (not the swallow-the-error seam) so backend invariant messages — last
- * OWNER, duplicate username, no self-delete — reach the UI verbatim.
+ * Lists users from the cached `users` slice and exposes create / change-role /
+ * delete. Each mutation upserts/removes the returned user in the store (no
+ * refetch), and surfaces backend invariant messages (last OWNER, duplicate
+ * username, no self-delete) verbatim.
  */
 export function useUsersLogic() {
   const { t } = useTranslation()
+  const dispatch = useAppDispatch()
   const { user: currentUser } = useAuthInformation()
-  const loader = useCallback(() => listUsers(), [])
-  const { data, status, reload } = useDataLoading(loader)
+  const { users, status } = useUsers()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const guard = useCallback(
-    async (action: () => Promise<unknown>, fallback: string) => {
+    async (action: () => Promise<void>, fallback: string): Promise<boolean> => {
       setErrorMessage(null)
       try {
         await action()
-        reload()
         return true
       } catch (error) {
         setErrorMessage(extractProblemDetail(error) ?? fallback)
         return false
       }
     },
-    [reload]
+    []
   )
 
   const createUser = useCallback(
     (request: CreateUserRequest) =>
-      guard(() => createUserApi(request), t("users.error.create")),
-    [guard, t]
+      guard(async () => {
+        dispatch(upsertUser(await createUserApi(request)))
+      }, t("users.error.create")),
+    [guard, dispatch, t]
   )
 
   const changeRole = useCallback(
     (id: string, role: ChangeRoleRequestRole) =>
-      guard(() => changeUserRole(id, { role }), t("users.error.changeRole")),
-    [guard, t]
+      guard(async () => {
+        dispatch(upsertUser(await changeUserRole(id, { role })))
+      }, t("users.error.changeRole")),
+    [guard, dispatch, t]
   )
 
   const removeUser = useCallback(
-    (id: string) => guard(() => deleteUserApi(id), t("users.error.delete")),
-    [guard, t]
+    (id: string) =>
+      guard(async () => {
+        await deleteUserApi(id)
+        dispatch(removeUserFromStore(id))
+      }, t("users.error.delete")),
+    [guard, dispatch, t]
   )
 
   return {
-    users: data ?? [],
+    users,
     status,
-    reload,
     createUser,
     changeRole,
     removeUser,

@@ -12,8 +12,16 @@ import { useDatasourceDetailLogic } from "@/pages/dbDetail/useDatasourceDetailLo
 
 export function DatasourceDetailPage({ id }: { readonly id: string }) {
   const { t } = useTranslation()
-  const { datasource, tables, schemaStatus, reloadSchema } =
+  const { datasource, tables, schemaStatus, schemaError, reloadSchema } =
     useDatasourceDetailLogic(id)
+
+  // Map the backend's dev-facing messages to friendly copy; pass through the
+  // rest (e.g. a missing Secret key), which are already admin-readable.
+  const schemaReason = schemaError?.includes("no backing service")
+    ? t("detail.schemaNoService")
+    : schemaError?.includes("no resolved credentials")
+      ? t("detail.schemaNoCredentials")
+      : schemaError
 
   const name = datasource?.displayName ?? datasource?.workloadName ?? id
   const engine = engineStyle(datasource?.driver)
@@ -98,7 +106,16 @@ export function DatasourceDetailPage({ id }: { readonly id: string }) {
           )}
           {schemaStatus === "failed" && (
             <div className="flex flex-col items-center gap-3 p-8 text-center">
-              <p className="text-destructive text-sm">{t("detail.schemaError")}</p>
+              <div className="flex flex-col gap-1">
+                <p className="text-destructive text-sm font-medium">
+                  {t("detail.schemaError")}
+                </p>
+                {schemaReason && (
+                  <p className="text-muted-foreground mx-auto max-w-md text-xs">
+                    {schemaReason}
+                  </p>
+                )}
+              </div>
               <Button variant="outline" size="sm" onClick={reloadSchema}>
                 {t("common.retry")}
               </Button>

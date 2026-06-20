@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router"
 import { ChevronRight, Layers } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import type { DatasourceResponse } from "@/api/generated/model"
+import type { DatasourceResponse, GroupResponse } from "@/api/generated/model"
 import { engineStyle, engineTint } from "@/lib/engine"
 import { mockMetrics, meterColor } from "@/lib/mock-metrics"
 
@@ -20,8 +20,8 @@ function name(datasource: DatasourceResponse): string {
   )
 }
 
-function isProd(namespace: string): boolean {
-  return /prod/i.test(namespace)
+function isProd(name: string): boolean {
+  return /prod/i.test(name)
 }
 
 function Meter({ pct, label }: { readonly pct: number; readonly label: string }) {
@@ -42,38 +42,60 @@ function Meter({ pct, label }: { readonly pct: number; readonly label: string })
 
 export function InventoryList({
   datasources,
+  groups,
 }: {
   readonly datasources: readonly DatasourceResponse[]
+  readonly groups: readonly GroupResponse[]
 }) {
   const { t } = useTranslation()
 
-  const groups = useMemo(() => {
-    const map = new Map<string, DatasourceResponse[]>()
-    for (const datasource of datasources) {
-      const ns = datasource.namespace ?? "—"
-      const list = map.get(ns)
-      if (list) {
-        list.push(datasource)
-      } else {
-        map.set(ns, [datasource])
+  // Group databases by the group they belong to (from the groups API), not by
+  // their cluster namespace. Databases that aren't in any group fall into a
+  // trailing "Unassigned" section. Empty groups are hidden.
+  const sections = useMemo(() => {
+    const byId = new Map(datasources.map((datasource) => [datasource.id, datasource]))
+    const assigned = new Set<string>()
+
+    const groupSections = groups.map((group) => {
+      const dbs: DatasourceResponse[] = []
+      for (const id of group.datasourceIds ?? []) {
+        const datasource = byId.get(id)
+        if (datasource) {
+          dbs.push(datasource)
+          assigned.add(id)
+        }
       }
+      return { key: group.id ?? "", name: group.name ?? "—", dbs }
+    })
+
+    const unassigned = datasources.filter(
+      (datasource) => !(datasource.id && assigned.has(datasource.id))
+    )
+
+    const visible = groupSections.filter((section) => section.dbs.length > 0)
+    if (unassigned.length > 0) {
+      visible.push({
+        key: "__unassigned",
+        name: t("groups.unassigned"),
+        dbs: unassigned,
+      })
     }
-    return [...map.entries()].map(([ns, dbs]) => ({ ns, dbs }))
-  }, [datasources])
+    return visible
+  }, [datasources, groups, t])
 
   return (
     <div className="flex flex-col gap-6">
-      {groups.map((group) => (
-        <div key={group.ns}>
+      {sections.map((group) => (
+        <div key={group.key}>
           <div className="mb-2.5 flex items-center gap-2 pl-0.5">
             <Layers className="text-muted-foreground size-3.5" />
             <span className="font-mono text-[12.5px] font-medium text-[#c4c7cd]">
-              {group.ns}
+              {group.name}
             </span>
             <span className="text-muted-foreground text-[11px]">
               {t("databases.nsCount", { count: group.dbs.length })}
             </span>
-            {isProd(group.ns) && (
+            {isProd(group.name) && (
               <span className="rounded-[5px] border border-warning/25 bg-warning/10 px-1.5 py-px text-[10px] font-semibold tracking-wide text-warning">
                 {t("databases.prod")}
               </span>

@@ -11,7 +11,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { NativeSelect } from "@/components/ui/native-select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export function CreateGrantForm({
   userId,
@@ -59,17 +65,21 @@ export function CreateGrantForm({
     >
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="grant-scope">{t("grants.scope")}</Label>
-        <NativeSelect
-          id="grant-scope"
+        <Select
           value={scopeType}
-          onChange={(event) => setScopeType(event.target.value as ScopeType)}
+          onValueChange={(value) => setScopeType(value as ScopeType)}
         >
-          {Object.values(CreateGrantRequestScopeType).map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </NativeSelect>
+          <SelectTrigger id="grant-scope" className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.values(CreateGrantRequestScopeType).map((value) => (
+              <SelectItem key={value} value={value}>
+                {value}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {scopeType === "NAMESPACE" ? (
@@ -85,23 +95,30 @@ export function CreateGrantForm({
       ) : (
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="grant-datasource">{t("grants.datasource")}</Label>
-          <NativeSelect
-            id="grant-datasource"
-            value={datasourceId}
+          <Select
+            value={datasourceId === "" ? undefined : datasourceId}
             disabled={datasources.length === 0}
-            onChange={(event) => setDatasourceId(event.target.value)}
+            onValueChange={setDatasourceId}
           >
-            <option value="">
-              {datasources.length === 0
-                ? t("grants.noDatasources")
-                : t("grants.pickDatasource")}
-            </option>
-            {datasources.map((datasource) => (
-              <option key={datasource.id} value={datasource.id}>
-                {datasource.displayName ?? datasource.workloadName ?? datasource.id}
-              </option>
-            ))}
-          </NativeSelect>
+            <SelectTrigger id="grant-datasource" className="w-56">
+              <SelectValue
+                placeholder={
+                  datasources.length === 0
+                    ? t("grants.noDatasources")
+                    : t("grants.pickDatasource")
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {datasources.map((datasource) => (
+                <SelectItem key={datasource.id} value={datasource.id ?? ""}>
+                  {datasource.displayName ??
+                    datasource.workloadName ??
+                    datasource.id}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
 

@@ -12,6 +12,7 @@ import {
 } from "@/api/generated/groups/groups"
 import { list2 } from "@/api/generated/inventory/inventory"
 import { useGroupsLogic } from "@/pages/groups/useGroupsLogic"
+import { makeWrapper } from "@/test/makeWrapper"
 
 vi.mock("@/api/generated/groups/groups", () => ({
   list1: vi.fn(),
@@ -30,11 +31,15 @@ const mockedReorder = vi.mocked(reorder)
 const mockedAddMember = vi.mocked(addMember)
 const mockedRemoveMember = vi.mocked(removeMember)
 
-// Fresh array each call so useDataLoading's data reference changes on reload.
+// Fresh array each call so a forced refetch yields a new reference.
 const seed = () => [
   { id: "g1", name: "A", position: 0, datasourceIds: [] },
   { id: "g2", name: "B", position: 1, datasourceIds: [] },
 ]
+
+function render() {
+  return renderHook(() => useGroupsLogic(), { wrapper: makeWrapper() })
+}
 
 describe("useGroupsLogic", () => {
   beforeEach(() => {
@@ -44,14 +49,14 @@ describe("useGroupsLogic", () => {
   })
 
   it("lists groups ordered by position", async () => {
-    const { result } = renderHook(() => useGroupsLogic())
+    const { result } = render()
     await waitFor(() => expect(result.current.groups).toHaveLength(2))
     expect(result.current.groups.map((g) => g.id)).toEqual(["g1", "g2"])
   })
 
-  it("creates a group then reloads", async () => {
+  it("creates a group and upserts it without refetching", async () => {
     mockedCreate.mockResolvedValueOnce({ id: "g3", name: "C", position: 2 })
-    const { result } = renderHook(() => useGroupsLogic())
+    const { result } = render()
     await waitFor(() => expect(result.current.groups).toHaveLength(2))
 
     await act(async () => {
@@ -59,12 +64,15 @@ describe("useGroupsLogic", () => {
     })
 
     expect(mockedCreate).toHaveBeenCalledWith({ name: "C" })
-    await waitFor(() => expect(mockedList).toHaveBeenCalledTimes(2))
+    await waitFor(() =>
+      expect(result.current.groups.map((g) => g.id)).toContain("g3")
+    )
+    expect(mockedList).toHaveBeenCalledTimes(1)
   })
 
   it("reorders optimistically and persists the new id order", async () => {
     mockedReorder.mockResolvedValueOnce(undefined)
-    const { result } = renderHook(() => useGroupsLogic())
+    const { result } = render()
     await waitFor(() => expect(result.current.groups).toHaveLength(2))
 
     await act(async () => {
@@ -85,7 +93,7 @@ describe("useGroupsLogic", () => {
       config: { headers: {} } as never,
     }
     mockedReorder.mockRejectedValueOnce(error)
-    const { result } = renderHook(() => useGroupsLogic())
+    const { result } = render()
     await waitFor(() => expect(result.current.groups).toHaveLength(2))
 
     await act(async () => {
@@ -98,20 +106,40 @@ describe("useGroupsLogic", () => {
     )
   })
 
-  it("adds and removes a member then reloads", async () => {
-    mockedAddMember.mockResolvedValueOnce({ id: "g1", name: "A", position: 0 })
-    mockedRemoveMember.mockResolvedValueOnce({ id: "g1", name: "A", position: 0 })
-    const { result } = renderHook(() => useGroupsLogic())
+  it("adds and removes a member, upserting the returned group", async () => {
+    mockedAddMember.mockResolvedValueOnce({
+      id: "g1",
+      name: "A",
+      position: 0,
+      datasourceIds: ["ds-1"],
+    })
+    mockedRemoveMember.mockResolvedValueOnce({
+      id: "g1",
+      name: "A",
+      position: 0,
+      datasourceIds: [],
+    })
+    const { result } = render()
     await waitFor(() => expect(result.current.groups).toHaveLength(2))
 
     await act(async () => {
       await result.current.addMember("g1", "ds-1")
     })
     expect(mockedAddMember).toHaveBeenCalledWith("g1", { datasourceId: "ds-1" })
+    await waitFor(() =>
+      expect(
+        result.current.groups.find((g) => g.id === "g1")?.datasourceIds
+      ).toEqual(["ds-1"])
+    )
 
     await act(async () => {
       await result.current.removeMember("g1", "ds-1")
     })
     expect(mockedRemoveMember).toHaveBeenCalledWith("g1", "ds-1")
+    await waitFor(() =>
+      expect(
+        result.current.groups.find((g) => g.id === "g1")?.datasourceIds
+      ).toEqual([])
+    )
   })
 })
