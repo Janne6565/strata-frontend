@@ -4,6 +4,11 @@ import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 /**
  * The datasource title, with admin-only inline rename. Click the pencil to edit;
@@ -30,18 +35,22 @@ export function EditableName({
       <div className="flex min-w-0 items-center gap-2">
         <h1 className="truncate text-[20px] font-semibold tracking-tight">{value}</h1>
         {canEdit && (
-          <button
-            type="button"
-            aria-label={t("detail.rename")}
-            title={t("detail.rename")}
-            onClick={() => {
-              setDraft(value)
-              setEditing(true)
-            }}
-            className="text-muted-foreground hover:text-foreground shrink-0"
-          >
-            <Pencil className="size-4" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label={t("detail.rename")}
+                onClick={() => {
+                  setDraft(value)
+                  setEditing(true)
+                }}
+                className="text-muted-foreground hover:text-foreground shrink-0"
+              >
+                <Pencil className="size-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{t("detail.rename")}</TooltipContent>
+          </Tooltip>
         )}
       </div>
     )

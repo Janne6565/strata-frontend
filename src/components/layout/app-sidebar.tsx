@@ -5,6 +5,11 @@ import type { LucideIcon } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { BrandMark } from "@/components/brand-mark"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useAuthInformation } from "@/hooks/useAuthInformation"
 import { cn } from "@/lib/utils"
 
@@ -40,44 +45,53 @@ export function AppSidebar() {
         const active =
           pathname === item.to || pathname.startsWith(`${item.to}/`)
         return (
-          <Link
-            key={item.to}
-            to={item.to}
-            title={t(item.labelKey)}
-            aria-label={t(item.labelKey)}
-            className={cn(
-              ITEM,
-              active
-                ? "bg-primary/15 text-primary"
-                : "text-sidebar-foreground/55 hover:bg-white/5 hover:text-sidebar-foreground"
-            )}
-          >
-            <Icon className="size-[18px]" />
-          </Link>
+          <Tooltip key={item.to}>
+            <TooltipTrigger asChild>
+              <Link
+                to={item.to}
+                aria-label={t(item.labelKey)}
+                className={cn(
+                  ITEM,
+                  active
+                    ? "bg-primary/15 text-primary"
+                    : "text-sidebar-foreground/55 hover:bg-white/5 hover:text-sidebar-foreground"
+                )}
+              >
+                <Icon className="size-[18px]" />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="right">{t(item.labelKey)}</TooltipContent>
+          </Tooltip>
         )
       })}
 
       <div className="flex-1" />
 
-      <button
-        type="button"
-        title={t("common.signOut")}
-        aria-label={t("common.signOut")}
-        onClick={logout}
-        className={cn(
-          ITEM,
-          "text-sidebar-foreground/45 hover:bg-white/5 hover:text-sidebar-foreground"
-        )}
-      >
-        <LogOut className="size-[18px]" />
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            aria-label={t("common.signOut")}
+            onClick={logout}
+            className={cn(
+              ITEM,
+              "text-sidebar-foreground/45 hover:bg-white/5 hover:text-sidebar-foreground"
+            )}
+          >
+            <LogOut className="size-[18px]" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right">{t("common.signOut")}</TooltipContent>
+      </Tooltip>
 
-      <div
-        title={username ?? ""}
-        className="mt-1 flex size-[30px] items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-[#3a3d46] to-[#23252b] text-[11px] font-semibold text-[#c3c6cd]"
-      >
-        {initials}
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="mt-1 flex size-[30px] items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-[#3a3d46] to-[#23252b] text-[11px] font-semibold text-[#c3c6cd]">
+            {initials}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="right">{username ?? ""}</TooltipContent>
+      </Tooltip>
     </aside>
   )
 }

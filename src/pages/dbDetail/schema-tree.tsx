@@ -2,6 +2,12 @@ import { Table2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import type { TableInfo } from "@/api/generated/model"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { formatCount } from "@/lib/metrics"
 import { cn } from "@/lib/utils"
 
 function qualifiedName(table: TableInfo): string {
@@ -44,10 +50,15 @@ export function SchemaTree({
             >
               <Table2 className="text-muted-foreground size-3.5 shrink-0" />
               <span className="truncate">{name}</span>
-              {table.columns && table.columns.length > 0 && (
-                <span className="text-muted-foreground ml-auto text-xs">
-                  {table.columns.length}
-                </span>
+              {table.rowCount != null && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-muted-foreground ml-auto text-xs tabular-nums">
+                      ~{formatCount(table.rowCount)}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("detail.rowCountTitle")}</TooltipContent>
+                </Tooltip>
               )}
             </button>
           </li>

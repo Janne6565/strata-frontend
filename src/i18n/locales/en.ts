@@ -103,6 +103,7 @@ export const en = {
     schemaNoCredentials:
       "No resolved credentials are stored for it, so Strata can't authenticate. Supply credentials via a manual override.",
     noTables: "No tables found.",
+    rowCountTitle: "Approximate row count",
     pickTable: "Select a table to browse its rows.",
     rowRange: "Rows {{from}}–{{to}}",
     prev: "Previous",

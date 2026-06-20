@@ -3,6 +3,11 @@ import { useTranslation } from "react-i18next"
 
 import type { TableInfo } from "@/api/generated/model"
 import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { FilterBar } from "@/pages/dbDetail/filter-bar"
 import { ResultGrid } from "@/pages/dbDetail/result-grid"
 import { SchemaTree } from "@/pages/dbDetail/schema-tree"
@@ -74,17 +79,23 @@ export function BrowsePanel({
                 >
                   {t("detail.next")}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon-xs"
-                  onClick={onToggleEnlarge}
-                  title={enlarged ? t("detail.collapse") : t("detail.enlarge")}
-                  aria-label={
-                    enlarged ? t("detail.collapse") : t("detail.enlarge")
-                  }
-                >
-                  {enlarged ? <Minimize2 /> : <Maximize2 />}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon-xs"
+                      onClick={onToggleEnlarge}
+                      aria-label={
+                        enlarged ? t("detail.collapse") : t("detail.enlarge")
+                      }
+                    >
+                      {enlarged ? <Minimize2 /> : <Maximize2 />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {enlarged ? t("detail.collapse") : t("detail.enlarge")}
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
 
