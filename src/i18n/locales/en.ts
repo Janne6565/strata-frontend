@@ -32,11 +32,17 @@ export const en = {
   },
   search: {
     placeholder: "Search databases…",
+    open: "Search databases",
+    empty: "No databases found.",
+    navigate: "Navigate",
+    select: "Open",
+    close: "Close",
+    count: "{{count}} results",
   },
   databases: {
     title: "Databases",
     subtitle: "{{count}} instances across {{groups}} groups",
-    metricsNote: "Resource metrics are placeholder data.",
+    metricsNote: "Live metrics, refreshed every few seconds.",
     rescan: "Rescan",
     rescanning: "Rescanning…",
     error: "Couldn't load databases.",
@@ -58,7 +64,7 @@ export const en = {
       pods: "Pods",
       cpu: "CPU",
       memory: "Memory",
-      storage: "Storage",
+      size: "Size",
       conns: "Conns",
     },
     empty: {
@@ -71,10 +77,10 @@ export const en = {
     overview: "Overview",
     browse: "Browse",
     query: "Query",
-    metricsNote: "Resource metrics are placeholder data.",
+    metricsNote: "Live metrics, refreshed every few seconds.",
     stat: {
       conns: "Active connections",
-      storage: "Storage",
+      memory: "Memory",
       dataSize: "Data size",
       cpu: "CPU load",
       objects: "{{count}} objects",
@@ -123,6 +129,9 @@ export const en = {
     addDatabase: "Add database…",
     reorderLabel: "Reorder group",
     toggleMembers: "Toggle members",
+    deleteTitle: "Delete group?",
+    deleteConfirm:
+      "Delete the group “{{name}}”? This only removes the group label — the databases in it stay in the cluster and return to Unassigned. This can't be undone.",
     error: {
       load: "Couldn't load groups.",
       create: "Couldn't create the group.",
