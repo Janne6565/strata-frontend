@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { DatasourceDetailPage } from "@/pages/dbDetail"
 
-const TABS = ["overview", "browse", "query"] as const
+const TABS = ["overview", "browse", "query", "backups"] as const
 export type DetailTab = (typeof TABS)[number]
 
 function isDetailTab(value: unknown): value is DetailTab {

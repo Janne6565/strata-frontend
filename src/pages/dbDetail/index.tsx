@@ -1,11 +1,18 @@
 import { Link } from "@tanstack/react-router"
-import { ChevronLeft, Gauge, Table2, TerminalSquare } from "lucide-react"
+import {
+  ChevronLeft,
+  Gauge,
+  HardDriveDownload,
+  Table2,
+  TerminalSquare,
+} from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuthInformation } from "@/hooks/useAuthInformation"
 import { engineStyle, engineTint } from "@/lib/engine"
+import { BackupsTab } from "@/pages/dbDetail/BackupsTab"
 import { BrowseTab } from "@/pages/dbDetail/BrowseTab"
 import { EditableName } from "@/pages/dbDetail/EditableName"
 import { OverviewTab } from "@/pages/dbDetail/OverviewTab"
@@ -42,6 +49,7 @@ export function DatasourceDetailPage({
       : schemaError
 
   const name = datasource?.displayName ?? datasource?.workloadName ?? id
+  const isPostgres = datasource?.driver === "postgresql"
   const engine = engineStyle(datasource?.driver)
   const present = datasource?.status === "PRESENT"
   const statusColor = present ? "#3ecf8e" : "#e5a53b"
@@ -113,6 +121,12 @@ export function DatasourceDetailPage({
             <TerminalSquare />
             {t("detail.query")}
           </TabsTrigger>
+          {isPostgres && (
+            <TabsTrigger value="backups">
+              <HardDriveDownload />
+              {t("detail.backups")}
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="overview">
@@ -150,6 +164,12 @@ export function DatasourceDetailPage({
         <TabsContent value="query">
           <QueryTab id={id} />
         </TabsContent>
+
+        {isPostgres && (
+          <TabsContent value="backups">
+            <BackupsTab id={id} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )

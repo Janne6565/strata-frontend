@@ -2,19 +2,8 @@ import { Download } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
+import { formatBytes } from "@/lib/format"
 import { useBackupsLogic } from "@/pages/admin/backups/useBackupsLogic"
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  const units = ["KB", "MB", "GB", "TB"]
-  let value = bytes / 1024
-  let unit = 0
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024
-    unit += 1
-  }
-  return `${value.toFixed(1)} ${units[unit]}`
-}
 
 export function BackupsPage() {
   const { t } = useTranslation()

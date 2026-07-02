@@ -23,3 +23,25 @@ export function downloadBackup(name: string): Promise<Blob> {
     responseType: "blob",
   })
 }
+
+/** Lists backups for a single datasource, newest first. Needs read access to that datasource. */
+export function listBackupsForDatasource(
+  datasourceId: string
+): Promise<BackupResponse[]> {
+  return customInstance<BackupResponse[]>({
+    url: `/api/v1/datasources/${encodeURIComponent(datasourceId)}/backups`,
+    method: "GET",
+  })
+}
+
+/** Fetches a single datasource backup's bytes as a Blob. */
+export function downloadDatasourceBackup(
+  datasourceId: string,
+  name: string
+): Promise<Blob> {
+  return customInstance<Blob>({
+    url: `/api/v1/datasources/${encodeURIComponent(datasourceId)}/backups/${encodeURIComponent(name)}/download`,
+    method: "GET",
+    responseType: "blob",
+  })
+}

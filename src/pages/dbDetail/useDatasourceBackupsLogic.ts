@@ -1,15 +1,22 @@
 import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { downloadBackup, listBackups } from "@/api/backups"
+import {
+  downloadDatasourceBackup,
+  listBackupsForDatasource,
+} from "@/api/backups"
 import { useDataInteractions } from "@/api/useDataInteractions"
 import { useDataLoading } from "@/api/useDataLoading"
 import { saveBlob } from "@/lib/download"
 
-export function useBackupsLogic() {
+export function useDatasourceBackupsLogic(datasourceId: string) {
   const { t } = useTranslation()
-  const { data, status } = useDataLoading(listBackups)
-  const { run, errorMessage, clearError } = useDataInteractions()
+  const loader = useCallback(
+    () => listBackupsForDatasource(datasourceId),
+    [datasourceId]
+  )
+  const { data, status } = useDataLoading(loader)
+  const { run, errorMessage } = useDataInteractions()
   const [downloadingName, setDownloadingName] = useState<string | null>(null)
 
   const download = useCallback(
@@ -17,12 +24,12 @@ export function useBackupsLogic() {
       run(async () => {
         setDownloadingName(name)
         try {
-          saveBlob(await downloadBackup(name), name)
+          saveBlob(await downloadDatasourceBackup(datasourceId, name), name)
         } finally {
           setDownloadingName(null)
         }
-      }, t("backups.error.download")),
-    [run, t]
+      }, t("detail.backupError")),
+    [run, t, datasourceId]
   )
 
   return {
@@ -31,6 +38,5 @@ export function useBackupsLogic() {
     download,
     downloadingName,
     errorMessage,
-    clearError,
   }
 }
