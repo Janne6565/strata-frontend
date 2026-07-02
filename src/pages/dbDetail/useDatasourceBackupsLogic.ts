@@ -2,6 +2,7 @@ import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
+  createDatasourceBackup,
   downloadDatasourceBackup,
   listBackupsForDatasource,
 } from "@/api/backups"
@@ -15,8 +16,8 @@ export function useDatasourceBackupsLogic(datasourceId: string) {
     () => listBackupsForDatasource(datasourceId),
     [datasourceId]
   )
-  const { data, status } = useDataLoading(loader)
-  const { run, errorMessage } = useDataInteractions()
+  const { data, status, reload } = useDataLoading(loader)
+  const { run, status: actionStatus, errorMessage } = useDataInteractions()
   const [downloadingName, setDownloadingName] = useState<string | null>(null)
 
   const download = useCallback(
@@ -32,11 +33,22 @@ export function useDatasourceBackupsLogic(datasourceId: string) {
     [run, t, datasourceId]
   )
 
+  const createBackup = useCallback(
+    () =>
+      run(async () => {
+        await createDatasourceBackup(datasourceId)
+        reload()
+      }, t("detail.backupCreateError")),
+    [run, reload, t, datasourceId]
+  )
+
   return {
     backups: data ?? [],
     status,
     download,
     downloadingName,
+    createBackup,
+    isCreating: actionStatus === "loading" && downloadingName === null,
     errorMessage,
   }
 }

@@ -45,3 +45,13 @@ export function downloadDatasourceBackup(
     responseType: "blob",
   })
 }
+
+/** Triggers a backup of a datasource now and returns the new backup's metadata. */
+export function createDatasourceBackup(
+  datasourceId: string
+): Promise<BackupResponse> {
+  return customInstance<BackupResponse>({
+    url: `/api/v1/datasources/${encodeURIComponent(datasourceId)}/backups`,
+    method: "POST",
+  })
+}

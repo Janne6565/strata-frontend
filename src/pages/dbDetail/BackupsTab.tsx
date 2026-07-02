@@ -1,4 +1,4 @@
-import { Download } from "lucide-react"
+import { Download, Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
@@ -7,12 +7,31 @@ import { useDatasourceBackupsLogic } from "@/pages/dbDetail/useDatasourceBackups
 
 export function BackupsTab({ id }: { readonly id: string }) {
   const { t } = useTranslation()
-  const { backups, status, download, downloadingName, errorMessage } =
-    useDatasourceBackupsLogic(id)
+  const {
+    backups,
+    status,
+    download,
+    downloadingName,
+    createBackup,
+    isCreating,
+    errorMessage,
+  } = useDatasourceBackupsLogic(id)
 
   return (
     <div className="flex flex-col gap-3 p-4">
-      <p className="text-muted-foreground text-sm">{t("detail.backupsHint")}</p>
+      <div className="flex items-start justify-between gap-4">
+        <p className="text-muted-foreground text-sm">
+          {t("detail.backupsHint")}
+        </p>
+        <Button
+          size="sm"
+          disabled={isCreating || downloadingName !== null}
+          onClick={() => void createBackup()}
+        >
+          <Plus />
+          {isCreating ? t("detail.creatingBackup") : t("detail.createBackup")}
+        </Button>
+      </div>
 
       {errorMessage !== null && (
         <p className="text-destructive text-sm" role="alert">
