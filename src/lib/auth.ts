@@ -43,3 +43,16 @@ export function requireAdmin(): void {
     throw redirect({ to: "/databases" })
   }
 }
+
+/**
+ * Route guard for OWNER-only routes (e.g. database backups, which contain every
+ * user's password hash). Stricter than {@link requireAdmin}. The backend
+ * independently enforces authorization — this is just UX.
+ */
+export function requireOwner(): void {
+  requireFullAuth()
+  const role = store.getState().auth.user?.role
+  if (role !== "OWNER") {
+    throw redirect({ to: "/databases" })
+  }
+}

@@ -17,6 +17,7 @@ import { Route as AuthedDatabasesIndexRouteImport } from './routes/_authed/datab
 import { Route as AuthedDatabasesIdRouteImport } from './routes/_authed/databases.$id'
 import { Route as AuthedAdminUsersRouteImport } from './routes/_authed/admin.users'
 import { Route as AuthedAdminGrantsRouteImport } from './routes/_authed/admin.grants'
+import { Route as AuthedAdminBackupsRouteImport } from './routes/_authed/admin.backups'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -57,11 +58,17 @@ const AuthedAdminGrantsRoute = AuthedAdminGrantsRouteImport.update({
   path: '/admin/grants',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedAdminBackupsRoute = AuthedAdminBackupsRouteImport.update({
+  id: '/admin/backups',
+  path: '/admin/backups',
+  getParentRoute: () => AuthedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthedIndexRoute
   '/login': typeof LoginRoute
   '/groups': typeof AuthedGroupsRoute
+  '/admin/backups': typeof AuthedAdminBackupsRoute
   '/admin/grants': typeof AuthedAdminGrantsRoute
   '/admin/users': typeof AuthedAdminUsersRoute
   '/databases/$id': typeof AuthedDatabasesIdRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/groups': typeof AuthedGroupsRoute
   '/': typeof AuthedIndexRoute
+  '/admin/backups': typeof AuthedAdminBackupsRoute
   '/admin/grants': typeof AuthedAdminGrantsRoute
   '/admin/users': typeof AuthedAdminUsersRoute
   '/databases/$id': typeof AuthedDatabasesIdRoute
@@ -82,6 +90,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authed/groups': typeof AuthedGroupsRoute
   '/_authed/': typeof AuthedIndexRoute
+  '/_authed/admin/backups': typeof AuthedAdminBackupsRoute
   '/_authed/admin/grants': typeof AuthedAdminGrantsRoute
   '/_authed/admin/users': typeof AuthedAdminUsersRoute
   '/_authed/databases/$id': typeof AuthedDatabasesIdRoute
@@ -93,6 +102,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/groups'
+    | '/admin/backups'
     | '/admin/grants'
     | '/admin/users'
     | '/databases/$id'
@@ -102,6 +112,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/groups'
     | '/'
+    | '/admin/backups'
     | '/admin/grants'
     | '/admin/users'
     | '/databases/$id'
@@ -112,6 +123,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authed/groups'
     | '/_authed/'
+    | '/_authed/admin/backups'
     | '/_authed/admin/grants'
     | '/_authed/admin/users'
     | '/_authed/databases/$id'
@@ -181,12 +193,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminGrantsRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/admin/backups': {
+      id: '/_authed/admin/backups'
+      path: '/admin/backups'
+      fullPath: '/admin/backups'
+      preLoaderRoute: typeof AuthedAdminBackupsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
   }
 }
 
 interface AuthedRouteChildren {
   AuthedGroupsRoute: typeof AuthedGroupsRoute
   AuthedIndexRoute: typeof AuthedIndexRoute
+  AuthedAdminBackupsRoute: typeof AuthedAdminBackupsRoute
   AuthedAdminGrantsRoute: typeof AuthedAdminGrantsRoute
   AuthedAdminUsersRoute: typeof AuthedAdminUsersRoute
   AuthedDatabasesIdRoute: typeof AuthedDatabasesIdRoute
@@ -196,6 +216,7 @@ interface AuthedRouteChildren {
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedGroupsRoute: AuthedGroupsRoute,
   AuthedIndexRoute: AuthedIndexRoute,
+  AuthedAdminBackupsRoute: AuthedAdminBackupsRoute,
   AuthedAdminGrantsRoute: AuthedAdminGrantsRoute,
   AuthedAdminUsersRoute: AuthedAdminUsersRoute,
   AuthedDatabasesIdRoute: AuthedDatabasesIdRoute,

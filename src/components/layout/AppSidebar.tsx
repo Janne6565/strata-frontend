@@ -1,6 +1,13 @@
 import { Link, useLocation } from "@tanstack/react-router"
 import type { ParseKeys } from "i18next"
-import { Database, KeyRound, Layers, LogOut, Users } from "lucide-react"
+import {
+  Database,
+  HardDriveDownload,
+  KeyRound,
+  Layers,
+  LogOut,
+  Users,
+} from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
@@ -18,6 +25,7 @@ interface NavItem {
   readonly labelKey: ParseKeys
   readonly icon: LucideIcon
   readonly adminOnly?: boolean
+  readonly ownerOnly?: boolean
 }
 
 const NAV_ITEMS: readonly NavItem[] = [
@@ -25,16 +33,25 @@ const NAV_ITEMS: readonly NavItem[] = [
   { to: "/groups", labelKey: "nav.groups", icon: Layers },
   { to: "/admin/users", labelKey: "nav.users", icon: Users, adminOnly: true },
   { to: "/admin/grants", labelKey: "nav.grants", icon: KeyRound, adminOnly: true },
+  {
+    to: "/admin/backups",
+    labelKey: "nav.backups",
+    icon: HardDriveDownload,
+    ownerOnly: true,
+  },
 ]
 
 const ITEM = "flex size-[38px] items-center justify-center rounded-[10px] transition-colors"
 
 export function AppSidebar() {
   const { t } = useTranslation()
-  const { username, isAdmin, logout } = useAuthInformation()
+  const { username, isAdmin, isOwner, logout } = useAuthInformation()
   const { pathname } = useLocation()
   const initials = (username ?? "?").slice(0, 2).toUpperCase()
-  const items = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin)
+  const items = NAV_ITEMS.filter(
+    (item) =>
+      (!item.adminOnly || isAdmin) && (!item.ownerOnly || isOwner)
+  )
 
   return (
     <aside className="flex w-[58px] shrink-0 flex-col items-center gap-1.5 border-r border-sidebar-border bg-sidebar py-3.5">

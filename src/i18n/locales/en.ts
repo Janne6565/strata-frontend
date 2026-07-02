@@ -29,6 +29,7 @@ export const en = {
     groups: "Groups",
     users: "Users",
     grants: "Grants",
+    backups: "Backups",
     soon: "Soon",
   },
   search: {
@@ -213,6 +214,24 @@ export const en = {
       load: "Couldn't load grants.",
       create: "Couldn't create the grant.",
       revoke: "Couldn't revoke the grant.",
+    },
+  },
+  backups: {
+    title: "Database Backups",
+    subtitle:
+      "Automatic snapshots of the Strata database, taken on a schedule. Download one to keep an offline copy.",
+    empty: "No backups yet. The first scheduled backup will appear here.",
+    download: "Download",
+    downloading: "Downloading…",
+    col: {
+      name: "Backup",
+      created: "Created",
+      size: "Size",
+      actions: "Actions",
+    },
+    error: {
+      load: "Couldn't load backups.",
+      download: "Couldn't download the backup.",
     },
   },
 } as const

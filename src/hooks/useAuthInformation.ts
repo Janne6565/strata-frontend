@@ -33,6 +33,8 @@ export function useAuthInformation() {
       role,
       // OWNER and ADMIN share the admin-only surfaces (rescan, manual-add, admin nav).
       isAdmin: role === "ADMIN" || role === "OWNER",
+      // OWNER-only surfaces (e.g. database backups).
+      isOwner: role === "OWNER",
       logout,
     }),
     [auth, role, logout]
