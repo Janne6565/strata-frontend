@@ -20,8 +20,13 @@ export const en = {
     password: "Password",
     signingIn: "Signing in…",
     footer: "Local account · session secured with a short-lived token",
+    oauthDivider: "or",
+    oauthAuthentik: "Login with Authentik",
     error: {
       generic: "Something went wrong. Please try again.",
+      oauthNoAccess:
+        "Your account has no Strata access group. Ask an admin to add you to strata-users or strata-admins in Authentik.",
+      oauthGeneric: "Login with Authentik failed. Please try again.",
     },
   },
   nav: {

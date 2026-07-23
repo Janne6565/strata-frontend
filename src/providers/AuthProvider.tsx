@@ -2,8 +2,8 @@ import { useEffect, useRef } from "react"
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
-import { me } from "@/api/generated/authentication/authentication"
-import { clearAuthToken, getAuthToken } from "@/lib/auth"
+import { token as refreshSession } from "@/api/generated/authentication/authentication"
+import { clearAuthToken, setAuthToken } from "@/lib/auth"
 import {
   clearIdentity,
   markBootstrapped,
@@ -13,9 +13,11 @@ import {
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 
 /**
- * Validates a persisted token on startup by calling `me()`, so a reload keeps
- * the user signed in (and a stale token is dropped) before any route guard
- * runs. Children render only once this has settled.
+ * Bootstraps the session on startup by exchanging the httpOnly refresh cookie
+ * for a fresh in-memory access token (POST /api/v1/auth/token). On success the
+ * user stays signed in across reloads without any token in storage; on 401 the
+ * session is simply treated as signed-out. Children render only once this has
+ * settled, so route guards see the final auth state.
  */
 interface AuthProviderProps {
   readonly children: ReactNode
@@ -34,18 +36,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
     startedRef.current = true
 
-    const token = getAuthToken()
-    if (!token) {
-      dispatch(markBootstrapped())
-      return
-    }
-
     dispatch(setAuthStatus("loading"))
     void (async () => {
       try {
-        const user = await me()
-        dispatch(setIdentity({ token, user }))
+        const response = await refreshSession()
+        if (!response.token) {
+          throw new Error("Refresh response contained no access token")
+        }
+        setAuthToken(response.token)
+        dispatch(
+          setIdentity({ token: response.token, user: response.user ?? null })
+        )
       } catch {
+        // No valid refresh cookie (401) or malformed response → signed out.
         clearAuthToken()
         dispatch(clearIdentity())
       } finally {

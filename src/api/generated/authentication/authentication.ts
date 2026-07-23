@@ -17,7 +17,29 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
   /**
- * @summary Authenticate with username/password and receive an access token
+ * @summary Exchange the refresh cookie for a fresh access token and rotate the refresh cookie
+ */
+export const token = (
+
+ options?: SecondParameter<typeof customInstance<LoginResponse>>,) => {
+      return customInstance<LoginResponse>(
+      {url: `/api/v1/auth/token`, method: 'POST'
+    },
+      options);
+    }
+  /**
+ * @summary Clear the refresh cookie
+ */
+export const logout = (
+
+ options?: SecondParameter<typeof customInstance<void>>,) => {
+      return customInstance<void>(
+      {url: `/api/v1/auth/logout`, method: 'POST'
+    },
+      options);
+    }
+  /**
+ * @summary Authenticate with username/password: returns an access token and sets the refresh cookie
  */
 export const login = (
     loginRequest: LoginRequest,
@@ -40,5 +62,7 @@ export const me = (
     },
       options);
     }
-  export type LoginResult = NonNullable<Awaited<ReturnType<typeof login>>>
+  export type TokenResult = NonNullable<Awaited<ReturnType<typeof token>>>
+export type LogoutResult = NonNullable<Awaited<ReturnType<typeof logout>>>
+export type LoginResult = NonNullable<Awaited<ReturnType<typeof login>>>
 export type MeResult = NonNullable<Awaited<ReturnType<typeof me>>>

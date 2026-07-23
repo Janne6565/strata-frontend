@@ -1,6 +1,8 @@
+import { Fingerprint } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { BrandMark } from "@/components/BrandMark"
+import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
 import { Input } from "@/components/ui/input"
 import { useLoginLogic } from "@/pages/login/useLoginLogic"
@@ -16,6 +18,8 @@ export function LoginPage() {
     submit,
     isSubmitting,
     errorMessage,
+    oauthErrorMessage,
+    startAuthentikLogin,
   } = useLoginLogic()
 
   return (
@@ -55,6 +59,16 @@ export function LoginPage() {
             </p>
           </div>
         </div>
+
+        {oauthErrorMessage !== null && (
+          <div
+            role="alert"
+            data-testid="login-oauth-error"
+            className="border-destructive/30 bg-destructive/10 text-destructive mb-4 rounded-lg border px-3 py-2 text-sm"
+          >
+            {oauthErrorMessage}
+          </div>
+        )}
 
         <form
           onSubmit={submit}
@@ -106,6 +120,25 @@ export function LoginPage() {
             {isSubmitting ? t("login.signingIn") : t("common.signIn")}
           </button>
         </form>
+
+        <div className="my-5 flex items-center gap-3">
+          <span className="h-px flex-1 bg-white/10" />
+          <span className="text-muted-foreground/70 text-xs tracking-wide uppercase">
+            {t("login.oauthDivider")}
+          </span>
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          data-testid="login-authentik"
+          onClick={startAuthentikLogin}
+          className="h-11 w-full gap-2"
+        >
+          <Fingerprint aria-hidden size={16} />
+          {t("login.oauthAuthentik")}
+        </Button>
 
         <p className="text-muted-foreground/70 mt-3.5 text-center text-xs">
           {t("login.footer")}

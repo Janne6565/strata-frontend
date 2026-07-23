@@ -6,7 +6,9 @@
  */
 
 export * from './addMemberRequest';
+export * from './backupResponse';
 export * from './browseParams';
+export * from './callbackParams';
 export * from './changeRoleRequest';
 export * from './changeRoleRequestRole';
 export * from './columnInfo';
@@ -29,9 +31,12 @@ export * from './listForUserParams';
 export * from './loginRequest';
 export * from './loginResponse';
 export * from './manualAddRequest';
+export * from './metricsRequest';
 export * from './queryRequest';
 export * from './queryResult';
+export * from './renameRequest';
 export * from './reorderGroupsRequest';
+export * from './resourceMetricsResponse';
 export * from './rowPage';
 export * from './schemaInfo';
 export * from './tableInfo';

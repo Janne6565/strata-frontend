@@ -5,14 +5,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import "@/i18n"
 import { login } from "@/api/generated/authentication/authentication"
-import { AUTH_TOKEN_KEY } from "@/lib/auth"
+import { clearAuthToken, getAuthToken } from "@/lib/auth"
 import { useLoginLogic } from "@/pages/login/useLoginLogic"
 import { makeWrapper } from "@/test/makeWrapper"
 
 const navigate = vi.fn()
 
+// The hook reads the /login route's search params through getRouteApi; this
+// mutable value lets each test drive the `oauthError` param.
+let searchValue: { oauthError?: "noAccess" | boolean } = {}
+
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
+  getRouteApi: () => ({ useSearch: () => searchValue }),
 }))
 
 vi.mock("@/api/generated/authentication/authentication", () => ({
@@ -33,10 +38,11 @@ function renderLoginLogic() {
 describe("useLoginLogic", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    globalThis.localStorage.clear()
+    clearAuthToken()
+    searchValue = {}
   })
 
-  it("trims the username, persists the token, and navigates home on success", async () => {
+  it("trims the username, keeps the token in memory, and navigates home on success", async () => {
     mockedLogin.mockResolvedValueOnce({
       token: "tok-123",
       expiresAt: "2026-01-01T00:00:00Z",
@@ -56,7 +62,8 @@ describe("useLoginLogic", () => {
       username: "owner",
       password: "pw",
     })
-    expect(globalThis.localStorage.getItem(AUTH_TOKEN_KEY)).toBe("tok-123")
+    expect(getAuthToken()).toBe("tok-123")
+    expect(globalThis.localStorage.getItem("strata.token")).toBeNull()
     expect(navigate).toHaveBeenCalledWith({ to: "/" })
     expect(result.current.errorMessage).toBeNull()
   })
@@ -82,8 +89,49 @@ describe("useLoginLogic", () => {
     })
 
     expect(result.current.errorMessage).toBe("Invalid credentials")
-    expect(globalThis.localStorage.getItem(AUTH_TOKEN_KEY)).toBeNull()
+    expect(getAuthToken()).toBeNull()
     expect(navigate).not.toHaveBeenCalled()
     expect(result.current.isSubmitting).toBe(false)
+  })
+
+  it("maps oauthError=noAccess to the no-access message", () => {
+    searchValue = { oauthError: "noAccess" }
+    const { result } = renderLoginLogic()
+    expect(result.current.oauthErrorMessage).toContain("Strata access group")
+  })
+
+  it("maps a generic oauthError to the generic failure message", () => {
+    searchValue = { oauthError: true }
+    const { result } = renderLoginLogic()
+    expect(result.current.oauthErrorMessage).toContain("failed")
+  })
+
+  it("exposes no oauth error message when the param is absent", () => {
+    const { result } = renderLoginLogic()
+    expect(result.current.oauthErrorMessage).toBeNull()
+  })
+
+  it("navigates the browser to the Authentik authorize endpoint", () => {
+    const originalLocation = globalThis.location
+    const locationStub = { href: "" }
+    Object.defineProperty(globalThis, "location", {
+      configurable: true,
+      value: locationStub,
+    })
+
+    try {
+      const { result } = renderLoginLogic()
+      act(() => {
+        result.current.startAuthentikLogin()
+      })
+      expect(locationStub.href).toBe(
+        "/api/v1/auth/oauth/authentik/authorize"
+      )
+    } finally {
+      Object.defineProperty(globalThis, "location", {
+        configurable: true,
+        value: originalLocation,
+      })
+    }
   })
 })

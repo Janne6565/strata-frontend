@@ -2,22 +2,34 @@ import { redirect } from "@tanstack/react-router"
 
 import { store } from "@/store/store"
 
-export const AUTH_TOKEN_KEY = "strata.token"
+// Legacy key from the old localStorage-token model. The access token now lives
+// in memory only (see below); this is kept solely to purge stale persisted
+// tokens on first load.
+const LEGACY_TOKEN_KEY = "strata.token"
+
+// The access token is short-lived and held in memory only — never persisted —
+// so an XSS payload can't read it from storage. Reloads survive via the
+// httpOnly refresh cookie, which AuthProvider exchanges for a fresh access
+// token on bootstrap (see providers/AuthProvider.tsx + api/axios-instance.ts).
+let accessToken: string | null = null
+
+// One-time cleanup: drop any token left behind by the previous localStorage model.
+globalThis.localStorage?.removeItem(LEGACY_TOKEN_KEY)
 
 export function getAuthToken(): string | null {
-  return globalThis.localStorage.getItem(AUTH_TOKEN_KEY)
+  return accessToken
 }
 
 export function setAuthToken(token: string): void {
-  globalThis.localStorage.setItem(AUTH_TOKEN_KEY, token)
+  accessToken = token
 }
 
 export function clearAuthToken(): void {
-  globalThis.localStorage.removeItem(AUTH_TOKEN_KEY)
+  accessToken = null
 }
 
 export function isAuthenticated(): boolean {
-  return getAuthToken() !== null
+  return accessToken !== null
 }
 
 /**

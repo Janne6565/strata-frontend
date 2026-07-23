@@ -7,7 +7,8 @@
 import type {
   DatasourceResponse,
   DiscoverySummary,
-  ManualAddRequest
+  ManualAddRequest,
+  RenameRequest
 } from '../model';
 
 import { customInstance } from '../../axios-instance';
@@ -73,8 +74,23 @@ export const unregister = (
     },
       options);
     }
+  /**
+ * @summary Rename a datasource (set its display name)
+ */
+export const rename1 = (
+    id: string,
+    renameRequest: RenameRequest,
+ options?: SecondParameter<typeof customInstance<DatasourceResponse>>,) => {
+      return customInstance<DatasourceResponse>(
+      {url: `/api/v1/datasources/${id}`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: renameRequest
+    },
+      options);
+    }
   export type List2Result = NonNullable<Awaited<ReturnType<typeof list2>>>
 export type ManualAddResult = NonNullable<Awaited<ReturnType<typeof manualAdd>>>
 export type RescanResult = NonNullable<Awaited<ReturnType<typeof rescan>>>
 export type GetResult = NonNullable<Awaited<ReturnType<typeof get>>>
 export type UnregisterResult = NonNullable<Awaited<ReturnType<typeof unregister>>>
+export type Rename1Result = NonNullable<Awaited<ReturnType<typeof rename1>>>
