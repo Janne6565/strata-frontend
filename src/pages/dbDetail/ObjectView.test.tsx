@@ -26,7 +26,7 @@ const ROWS = [
   ],
 ]
 
-function renderView(onOpen = vi.fn()) {
+function renderView(onOpen = vi.fn(), onPreview = vi.fn()) {
   render(
     <ObjectView
       bucket="photos"
@@ -36,12 +36,27 @@ function renderView(onOpen = vi.fn()) {
       sort={null}
       onToggleSort={vi.fn()}
       onOpen={onOpen}
+      onPreview={onPreview}
     />
   )
   return onOpen
 }
 
 describe("ObjectView", () => {
+  it("opens a file's preview on click", async () => {
+    const user = userEvent.setup()
+    const onPreview = vi.fn()
+    renderView(vi.fn(), onPreview)
+
+    await user.click(screen.getByText("a.jpg"))
+
+    expect(onPreview).toHaveBeenCalledWith({
+      key: "2024/a.jpg",
+      name: "a.jpg",
+      size: 1536,
+    })
+  })
+
   it("shows object sizes in human units", () => {
     renderView()
     expect(screen.getByText("a.jpg")).toBeInTheDocument()

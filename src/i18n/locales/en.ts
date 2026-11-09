@@ -153,6 +153,29 @@ export const en = {
       queryPlaceholder:
         "ls · ls bucket/folder/ · du bucket/folder/ · stat bucket/key",
     },
+    preview: {
+      close: "Close preview",
+      mode: "Preview mode",
+      detected: "Detected from the file name or type",
+      modes: {
+        text: "Text",
+        image: "Image",
+        video: "Video",
+        audio: "Audio",
+        pdf: "PDF",
+      },
+      unknownTitle: "Unknown file type",
+      unknownHint:
+        "Pick a preview mode above to view this file, or download it.",
+      tooLarge:
+        "This file is larger than 50 MB, so it isn't previewed. Download it instead.",
+      loadError: "Couldn't load this file.",
+      downloadError: "Couldn't download this file.",
+      decodeError: "This file can't be shown as {{mode}}. Try another mode.",
+      truncated: "Showing the first 1 MB. Download the file for the rest.",
+      binaryWarning:
+        "This looks like a binary file, so the text below may be unreadable.",
+    },
   },
   groups: {
     title: "Groups",

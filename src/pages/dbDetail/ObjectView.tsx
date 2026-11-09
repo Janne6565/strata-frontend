@@ -34,6 +34,7 @@ export function ObjectView({
   sort,
   onToggleSort,
   onOpen,
+  onPreview,
 }: {
   readonly bucket: string
   readonly prefix: string
@@ -42,6 +43,12 @@ export function ObjectView({
   readonly sort: SortState | null
   readonly onToggleSort: (column: string) => void
   readonly onOpen: (prefix: string) => void
+  /** Opens a file's preview; `size` is null when the listing has none. */
+  readonly onPreview: (file: {
+    readonly key: string
+    readonly name: string
+    readonly size: number | null
+  }) => void
 }) {
   const { t } = useTranslation()
   const index = (name: string) => (columns ?? []).indexOf(name)
@@ -158,10 +165,21 @@ export function ObjectView({
                       <span className="truncate">{name}</span>
                     </button>
                   ) : (
-                    <span className="flex items-center gap-2" title={key}>
+                    <button
+                      type="button"
+                      title={key}
+                      onClick={() =>
+                        onPreview({
+                          key,
+                          name,
+                          size: typeof size === "number" ? size : null,
+                        })
+                      }
+                      className="flex max-w-full items-center gap-2 text-left hover:underline"
+                    >
                       <File className="size-3.5 shrink-0 text-muted-foreground" />
                       <span className="truncate">{name}</span>
-                    </span>
+                    </button>
                   )}
                 </td>
                 <td

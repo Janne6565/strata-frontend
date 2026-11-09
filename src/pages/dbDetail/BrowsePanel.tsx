@@ -1,4 +1,5 @@
 import { Maximize2, Minimize2 } from "lucide-react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { TableInfo } from "@/api/generated/model"
@@ -13,10 +14,12 @@ import { currentPrefix, prefixFilters } from "@/lib/objectStore"
 import { isTimeColumn } from "@/lib/time"
 import { FilterBar } from "@/pages/dbDetail/FilterBar"
 import { LogView } from "@/pages/dbDetail/LogView"
+import { ObjectPreviewDialog } from "@/pages/dbDetail/ObjectPreviewDialog"
 import { ObjectView } from "@/pages/dbDetail/ObjectView"
 import { ResultGrid } from "@/pages/dbDetail/ResultGrid"
 import { SchemaTree } from "@/pages/dbDetail/SchemaTree"
 import type { FilterOp } from "@/pages/dbDetail/filters"
+import type { PreviewTarget } from "@/pages/dbDetail/useObjectPreviewLogic"
 import type { useRowBrowserLogic } from "@/pages/dbDetail/useRowBrowserLogic"
 
 type RowBrowser = ReturnType<typeof useRowBrowserLogic>
@@ -40,12 +43,14 @@ const INFLUX_HIDDEN_COLUMNS: ReadonlySet<string> = new Set([
  * `useRowBrowserLogic` instance so selection and paging stay in sync across them.
  */
 export function BrowsePanel({
+  datasourceId,
   browser,
   tables,
   driver,
   enlarged,
   onToggleEnlarge,
 }: {
+  readonly datasourceId: string
   readonly browser: RowBrowser
   readonly tables: readonly TableInfo[]
   readonly driver?: string
@@ -54,6 +59,7 @@ export function BrowsePanel({
 }) {
   const { t } = useTranslation()
   const kind = engineKind(driver)
+  const [preview, setPreview] = useState<PreviewTarget | null>(null)
   const pageColumns = browser.page?.columns ?? []
   const timeColumns =
     kind === "timeseries"
@@ -174,6 +180,12 @@ export function BrowsePanel({
                     onOpen={(prefix) =>
                       browser.applyFilters(prefixFilters(prefix))
                     }
+                    onPreview={(file) =>
+                      setPreview({
+                        bucket: browser.selected?.name ?? "",
+                        ...file,
+                      })
+                    }
                   />
                 ) : (
                   <ResultGrid
@@ -193,6 +205,13 @@ export function BrowsePanel({
           </>
         )}
       </div>
+      {kind === "object" && (
+        <ObjectPreviewDialog
+          datasourceId={datasourceId}
+          target={preview}
+          onClose={() => setPreview(null)}
+        />
+      )}
     </div>
   )
 }

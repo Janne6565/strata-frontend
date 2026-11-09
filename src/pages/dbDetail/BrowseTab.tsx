@@ -23,6 +23,7 @@ export function BrowseTab({
     <>
       <div className="h-[60vh]">
         <BrowsePanel
+          datasourceId={id}
           browser={browser}
           tables={tables}
           driver={driver}
@@ -46,6 +47,7 @@ export function BrowseTab({
               </DialogPrimitive.Title>
             </VisuallyHidden.Root>
             <BrowsePanel
+          datasourceId={id}
               browser={browser}
               tables={tables}
               driver={driver}
