@@ -162,7 +162,7 @@ export function DatasourceDetailPage({
         </TabsContent>
 
         <TabsContent value="query">
-          <QueryTab id={id} />
+          <QueryTab id={id} driver={datasource?.driver} />
         </TabsContent>
 
         {isPostgres && (

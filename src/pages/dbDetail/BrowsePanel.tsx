@@ -9,9 +9,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { engineKind } from "@/lib/engine"
+import { currentPrefix, prefixFilters } from "@/lib/objectStore"
 import { isTimeColumn } from "@/lib/time"
 import { FilterBar } from "@/pages/dbDetail/FilterBar"
 import { LogView } from "@/pages/dbDetail/LogView"
+import { ObjectView } from "@/pages/dbDetail/ObjectView"
 import { ResultGrid } from "@/pages/dbDetail/ResultGrid"
 import { SchemaTree } from "@/pages/dbDetail/SchemaTree"
 import type { FilterOp } from "@/pages/dbDetail/filters"
@@ -58,18 +60,22 @@ export function BrowsePanel({
       ? new Set(pageColumns.filter(isTimeColumn))
       : undefined
 
-  // Loki can only be filtered by label equality; other engines filter freely.
+  // Loki can only be filtered by label equality; object storage is navigated
+  // by folder (its only filter is the prefix); other engines filter freely.
   const selectedColumns = browser.selected?.columns ?? []
   const filterColumns =
     kind === "log"
       ? selectedColumns.filter((column) => column.type === "label")
-      : selectedColumns
+      : kind === "object"
+        ? []
+        : selectedColumns
 
   return (
     <div className="flex h-full overflow-hidden rounded-xl border border-border bg-card">
       <div className="w-64 shrink-0 overflow-auto border-r border-border">
         <SchemaTree
           tables={tables}
+          kind={kind}
           selected={browser.selected}
           onSelect={browser.select}
         />
@@ -84,7 +90,7 @@ export function BrowsePanel({
           <>
             <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
               <span className="text-sm font-medium">
-                {browser.selected.schema
+                {browser.selected.schema && kind !== "object"
                   ? `${browser.selected.schema}.${browser.selected.name}`
                   : browser.selected.name}
               </span>
@@ -156,6 +162,18 @@ export function BrowsePanel({
                   <LogView
                     columns={browser.page?.columns}
                     rows={browser.page?.rows}
+                  />
+                ) : kind === "object" ? (
+                  <ObjectView
+                    bucket={browser.selected.name ?? ""}
+                    prefix={currentPrefix(browser.filters)}
+                    columns={browser.page?.columns}
+                    rows={browser.page?.rows}
+                    sort={browser.sort}
+                    onToggleSort={browser.toggleSort}
+                    onOpen={(prefix) =>
+                      browser.applyFilters(prefixFilters(prefix))
+                    }
                   />
                 ) : (
                   <ResultGrid

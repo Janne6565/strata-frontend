@@ -2,10 +2,17 @@ import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { engineKind } from "@/lib/engine"
 import { ResultGrid } from "@/pages/dbDetail/ResultGrid"
 import { useQueryConsoleLogic } from "@/pages/dbDetail/useQueryConsoleLogic"
 
-export function QueryTab({ id }: { readonly id: string }) {
+export function QueryTab({
+  id,
+  driver,
+}: {
+  readonly id: string
+  readonly driver?: string
+}) {
   const { t } = useTranslation()
   const query = useQueryConsoleLogic(id)
   const isEmpty = query.sql.trim() === ""
@@ -15,7 +22,11 @@ export function QueryTab({ id }: { readonly id: string }) {
       <Textarea
         value={query.sql}
         onChange={(event) => query.setSql(event.target.value)}
-        placeholder={t("detail.queryPlaceholder")}
+        placeholder={
+          engineKind(driver) === "object"
+            ? t("detail.objects.queryPlaceholder")
+            : t("detail.queryPlaceholder")
+        }
         spellCheck={false}
         className="min-h-28 font-mono"
         aria-invalid={query.status === "failed"}

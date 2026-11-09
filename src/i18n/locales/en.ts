@@ -142,6 +142,17 @@ export const en = {
     execute: "Execute (write)",
     writeHint: "Writes may be blocked by read-only or prod safe-mode.",
     rowsAffected: "{{count}} row(s) affected.",
+    objects: {
+      path: "Folder path",
+      name: "Name",
+      size: "Size",
+      modified: "Last modified",
+      empty: "This folder is empty.",
+      noBuckets: "No buckets found.",
+      bucketSize: "{{count}} objects (total size of all objects in the bucket)",
+      queryPlaceholder:
+        "ls · ls bucket/folder/ · du bucket/folder/ · stat bucket/key",
+    },
   },
   groups: {
     title: "Groups",

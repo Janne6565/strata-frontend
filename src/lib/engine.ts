@@ -17,16 +17,19 @@ const ENGINES: Record<string, EngineStyle> = {
   influxdb: { short: "IF", color: "#8b7bf0" },
   influx: { short: "IF", color: "#8b7bf0" },
   loki: { short: "LK", color: "#e5a53b" },
+  minio: { short: "S3", color: "#d94f6a" },
 }
 
 /**
  * How an engine's rows are best presented: logs as a stream, time-series in a
- * timestamp-aware grid, everything else as a plain SQL table.
+ * timestamp-aware grid, object storage as a folder browser, everything else as
+ * a plain SQL table.
  */
-export type EngineKind = "log" | "timeseries" | "sql"
+export type EngineKind = "log" | "timeseries" | "object" | "sql"
 
 const LOG_ENGINES = new Set(["loki"])
 const TIMESERIES_ENGINES = new Set(["influxdb", "influx"])
+const OBJECT_ENGINES = new Set(["minio"])
 
 export function engineKind(driver?: string): EngineKind {
   const key = (driver ?? "").toLowerCase()
@@ -35,6 +38,9 @@ export function engineKind(driver?: string): EngineKind {
   }
   if (TIMESERIES_ENGINES.has(key)) {
     return "timeseries"
+  }
+  if (OBJECT_ENGINES.has(key)) {
+    return "object"
   }
   return "sql"
 }

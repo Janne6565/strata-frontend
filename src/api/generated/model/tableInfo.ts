@@ -12,4 +12,5 @@ export interface TableInfo {
   type?: string;
   columns?: ColumnInfo[];
   rowCount?: number;
+  sizeBytes?: number;
 }
