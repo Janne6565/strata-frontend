@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 
 import { rescan as rescanCluster } from "@/api/generated/inventory/inventory"
 import type { DatasourceResponse, GroupResponse } from "@/api/generated/model"
@@ -39,10 +39,11 @@ function countOccupiedGroups(
 
 /**
  * Reads the cached datasource catalog + groups from the store (fetched once and
- * reused across screens), filters by the global search query, and exposes a
- * rescan that reconciles the cluster then force-refreshes the catalog.
+ * reused across screens), filters by the global search query and the selected
+ * engine (owned by the route's URL), and exposes a rescan that reconciles the
+ * cluster then force-refreshes the catalog.
  */
-export function useInventoryLogic() {
+export function useInventoryLogic(engine: string | null = null) {
   const { isAdmin } = useAuthInformation()
   const search = useAppSelector((state) => state.ui.globalSearch)
     .trim()
@@ -51,7 +52,6 @@ export function useInventoryLogic() {
   const { datasources: all, status, refresh } = useDatasources()
   const { groups: rawGroups } = useGroups()
   const { status: rescanStatus, run } = useDataInteractions()
-  const [engine, setEngine] = useState<string | null>(null)
 
   const groups = useMemo(() => byPosition(rawGroups), [rawGroups])
 
@@ -95,13 +95,11 @@ export function useInventoryLogic() {
     shown,
     groups,
     groupCount,
-    engine,
-    setEngine,
     status,
     reload: refresh,
     isAdmin,
     rescan,
     isRescanning: rescanStatus === "loading",
-    isFiltered: search !== "",
+    isFiltered: search !== "" || engine !== null,
   }
 }

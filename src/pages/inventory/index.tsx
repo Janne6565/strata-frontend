@@ -7,22 +7,27 @@ import { InventoryList } from "@/pages/inventory/InventoryList"
 import { useInventoryLogic } from "@/pages/inventory/useInventoryLogic"
 import { cn } from "@/lib/utils"
 
-export function InventoryPage() {
+export function InventoryPage({
+  engine,
+  onEngineChange,
+}: {
+  /** The selected engine chip (driver), kept in the URL by the route. */
+  readonly engine: string | null
+  readonly onEngineChange: (engine: string | null) => void
+}) {
   const { t } = useTranslation()
   const {
     datasources,
     shown,
     groups,
     groupCount,
-    engine,
-    setEngine,
     status,
     reload,
     isAdmin,
     rescan,
     isRescanning,
     isFiltered,
-  } = useInventoryLogic()
+  } = useInventoryLogic(engine)
 
   return (
     <div className="animate-fade-up mx-auto flex max-w-[1280px] flex-col gap-4 p-7">
@@ -49,7 +54,7 @@ export function InventoryPage() {
         <EngineChips
           datasources={datasources}
           selected={engine}
-          onSelect={setEngine}
+          onSelect={onEngineChange}
         />
       )}
 

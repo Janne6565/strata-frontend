@@ -76,7 +76,7 @@ export const en = {
     },
     empty: {
       none: "No databases yet. Run a rescan to discover them.",
-      filtered: "No databases match your search.",
+      filtered: "No databases match your search or engine filter.",
     },
   },
   detail: {

@@ -60,12 +60,29 @@ describe("useInventoryLogic", () => {
       ds({ id: "b", displayName: "cache", driver: "redis" }),
     ])
     const { result } = renderHook(() => useInventoryLogic(), {
-      wrapper: makeWrapper({ ui: { globalSearch: "redis" } }),
+      wrapper: makeWrapper({
+        ui: { globalSearch: "redis", inventoryEngine: null },
+      }),
     })
 
     await waitFor(() => expect(result.current.status).toBe("idle"))
     expect(result.current.datasources).toHaveLength(1)
     expect(result.current.datasources[0]?.id).toBe("b")
+    expect(result.current.isFiltered).toBe(true)
+  })
+
+  it("narrows to the engine selected in the URL", async () => {
+    mockedList.mockResolvedValue([
+      ds({ id: "a", displayName: "orders", driver: "postgresql" }),
+      ds({ id: "b", displayName: "files", driver: "minio" }),
+    ])
+    const { result } = renderHook(() => useInventoryLogic("minio"), {
+      wrapper: makeWrapper(),
+    })
+
+    await waitFor(() => expect(result.current.status).toBe("idle"))
+    expect(result.current.datasources).toHaveLength(2)
+    expect(result.current.shown.map((d) => d.id)).toEqual(["b"])
     expect(result.current.isFiltered).toBe(true)
   })
 

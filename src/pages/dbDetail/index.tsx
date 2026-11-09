@@ -18,6 +18,7 @@ import { EditableName } from "@/pages/dbDetail/EditableName"
 import { OverviewTab } from "@/pages/dbDetail/OverviewTab"
 import { QueryTab } from "@/pages/dbDetail/QueryTab"
 import { useDatasourceDetailLogic } from "@/pages/dbDetail/useDatasourceDetailLogic"
+import { useAppSelector } from "@/store/hooks"
 
 export function DatasourceDetailPage({
   id,
@@ -30,6 +31,8 @@ export function DatasourceDetailPage({
 }) {
   const { t } = useTranslation()
   const { isAdmin } = useAuthInformation()
+  const lastEngine = useAppSelector((state) => state.ui.inventoryEngine)
+  const backSearch = lastEngine === null ? {} : { engine: lastEngine }
   const {
     datasource,
     tables,
@@ -65,6 +68,7 @@ export function DatasourceDetailPage({
     <div className="animate-fade-up mx-auto flex max-w-5xl flex-col gap-4 p-7">
       <Link
         to="/databases"
+        search={backSearch}
         className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1 text-sm"
       >
         <ChevronLeft className="size-4" />
